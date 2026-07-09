@@ -26,12 +26,14 @@
     --read-line:   rgba(0,0,0,0.12);
 }
 
-body {
+/* The scraper is a self-contained component that fills whatever container it's
+   dropped into (its own page, or the dashboard content area). */
+.scraper-app {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     font-size: 13.5px;
     background: var(--bg);
     color: var(--text);
-    height: 100vh;
+    height: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;

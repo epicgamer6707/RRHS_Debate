@@ -1,23 +1,17 @@
-"""Card scraper routes.
+"""Card scraper backend.
 
-For Phase 1 the scraper still lives at "/" so the app behaves exactly as before.
-In Phase 3 the landing page takes over "/" and this moves under the dashboard.
+The scraper UI is rendered inside the dashboard (main.dashboard_scraper). This
+blueprint just provides the streaming scrape endpoint it talks to.
 """
 import json
 import queue as q_mod
 
-from flask import Blueprint, render_template, request, jsonify, Response, stream_with_context
+from flask import Blueprint, request, jsonify, Response, stream_with_context
 from flask_login import login_required
 
 from ..scraper import submit_scrape, worker_status
 
 bp = Blueprint("scraper", __name__)
-
-
-@bp.route("/scraper")
-@login_required
-def home():
-    return render_template("scraper.html")
 
 
 @bp.route("/ping")

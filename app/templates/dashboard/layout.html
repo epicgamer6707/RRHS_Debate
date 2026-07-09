@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Dashboard · RRHS Debate{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% block head %}{% endblock %}
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 2h12v1.5H9.5V8H7V3.5H2V2zm0 6.5h5.5V14h1V8.5H14V7H2v1.5z"/>
+        </svg>
+      </div>
+      <div class="brand-name">RRHS <span>Debate</span></div>
+    </div>
+
+    <nav class="nav">
+      <a class="nav-item {{ 'active' if active == 'signup' }}" href="{{ url_for('main.dashboard_signup') }}">
+        <span class="nav-ic">📅</span> Sign up for Competition
+      </a>
+      <a class="nav-item {{ 'active' if active == 'scraper' }}" href="{{ url_for('main.dashboard_scraper') }}">
+        <span class="nav-ic">🃏</span> Card Scraper
+      </a>
+      <a class="nav-item {{ 'active' if active == 'library' }}" href="{{ url_for('main.dashboard_library') }}">
+        <span class="nav-ic">📚</span> Library
+      </a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="sidebar-user">
+        <div class="sidebar-user-name">{{ current_user.name or current_user.email }}</div>
+        <div class="sidebar-user-sub">Signed in</div>
+      </div>
+      <a class="sidebar-logout" href="{{ url_for('auth.logout') }}">Sign out</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    {% block tool %}{% endblock %}
+  </main>
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

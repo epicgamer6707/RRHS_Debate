@@ -1,0 +1,112 @@
+{% extends "dashboard/layout.html" %}
+{% block title %}Card Scraper · RRHS Debate{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/scraper.css') }}">
+<style id="fmtStyle"></style>
+{% endblock %}
+
+{% block tool %}
+<div class="scraper-app">
+
+  <!-- ── topbar ── -->
+  <div class="topbar">
+    <div class="search-wrap">
+      <input id="query" placeholder="Search evidence…" value="cap k"
+             onkeydown="if(event.key==='Enter') runSearch()"/>
+      <button class="btn-search" id="btn" onclick="runSearch()">Search</button>
+    </div>
+    <button class="btn-copyall" id="copyAllBtn" onclick="copyAll()">Copy All</button>
+  </div>
+
+  <!-- ── filterbar ── -->
+  <div class="filterbar">
+    <span class="filter-label">Year</span>
+    <select class="fb-select" id="filterYear">
+      <option value="all">All</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+      <option value="2023">2023</option>
+      <option value="2022">2022</option>
+      <option value="2021">2021</option>
+      <option value="2020">2020</option>
+      <option value="2019">2019</option>
+      <option value="2018">2018</option>
+      <option value="2017">2017</option>
+      <option value="2016">2016</option>
+      <option value="2015">2015</option>
+      <option value="2014">2014</option>
+      <option value="2013">2013</option>
+    </select>
+
+    <span class="filter-label" style="margin-left:4px;">Event</span>
+    <select class="fb-select" id="filterEvent">
+      <option value="all">All</option>
+      <option value="hspolicy">HS Policy</option>
+      <option value="hsld">HS LD</option>
+      <option value="hspf">HS PF</option>
+      <option value="ndtceda">NDT/CEDA</option>
+      <option value="nfald">NFA LD</option>
+    </select>
+
+    <div class="fb-divider"></div>
+
+    <span class="filter-label">Font</span>
+    <select class="fb-select" id="fontSel" onchange="applyFormat()">
+      <option value="Calibri,'Segoe UI',Arial,sans-serif">Calibri</option>
+      <option value="Arial,Helvetica,sans-serif">Arial</option>
+      <option value="'Times New Roman',Times,serif">Times New Roman</option>
+    </select>
+
+    <div class="fb-divider"></div>
+
+    <span class="filter-label">Highlight</span>
+    <div class="hl-group">
+      <button class="hl-btn active" id="hlY" onclick="setHL('Y')" title="Yellow">Y</button>
+      <button class="hl-btn"        id="hlG" onclick="setHL('G')" title="Green">G</button>
+      <button class="hl-btn"        id="hlB" onclick="setHL('B')" title="Blue">B</button>
+      <button class="hl-btn"        id="hlN" onclick="setHL('N')" title="No highlight">×</button>
+    </div>
+
+    <div class="fb-divider"></div>
+
+    <label class="var-label">
+      <input type="checkbox" id="varFont" checked onchange="applyFormat()">
+      Variable sizes
+    </label>
+  </div>
+
+  <!-- ── statusbar ── -->
+  <div class="statusbar">
+    <div class="spinner" id="spinner"></div>
+    <span class="status-text" id="status">Ready — enter a search above.</span>
+  </div>
+
+  <!-- ── panels ── -->
+  <div class="panels">
+    <div class="left-panel">
+      <div class="left-header">
+        <span class="left-header-title">Cards</span>
+        <span class="left-count" id="leftCount">0</span>
+      </div>
+      <div class="left-scroll" id="leftPanel">
+        <div class="left-empty">
+          <div class="left-empty-icon">🗂</div>
+          <span>Results will appear here</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-panel" id="rightPanel">
+      <div class="right-empty">
+        <div class="right-empty-icon">📄</div>
+        <span>Select a card to read it</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/scraper.js') }}"></script>
+{% endblock %}

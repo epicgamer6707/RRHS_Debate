@@ -1,4 +1,8 @@
-"""Landing page + dashboard routes."""
+"""Landing page + dashboard routes.
+
+The dashboard is a persistent shell (sidebar) with three tool views:
+Card Scraper, Sign up for Competition, and Library.
+"""
 from flask import Blueprint, render_template, redirect, url_for
 from flask_login import login_required, current_user
 
@@ -16,4 +20,23 @@ def index():
 @bp.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template("dashboard.html", user=current_user)
+    # Default landing tool inside the dashboard.
+    return redirect(url_for("main.dashboard_scraper"))
+
+
+@bp.route("/dashboard/scraper")
+@login_required
+def dashboard_scraper():
+    return render_template("dashboard/scraper.html", active="scraper")
+
+
+@bp.route("/dashboard/signup")
+@login_required
+def dashboard_signup():
+    return render_template("dashboard/signup.html", active="signup")
+
+
+@bp.route("/dashboard/library")
+@login_required
+def dashboard_library():
+    return render_template("dashboard/library.html", active="library")
