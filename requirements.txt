@@ -4,4 +4,6 @@ flask-sqlalchemy
 flask-login
 flask-wtf
 email-validator
+authlib
+requests
 psycopg2-binary

@@ -4,7 +4,7 @@ import os
 from flask import Flask
 
 from .config import Config
-from .extensions import db, login_manager
+from .extensions import db, login_manager, oauth
 
 
 def create_app(config_object=Config):
@@ -13,6 +13,22 @@ def create_app(config_object=Config):
 
     db.init_app(app)
     login_manager.init_app(app)
+
+    # Google OAuth — only registered when credentials are present.
+    oauth.init_app(app)
+    if app.config.get("GOOGLE_ENABLED"):
+        oauth.register(
+            name="google",
+            client_id=app.config["GOOGLE_CLIENT_ID"],
+            client_secret=app.config["GOOGLE_CLIENT_SECRET"],
+            server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+            client_kwargs={"scope": "openid email profile"},
+        )
+
+    # Make the Google flag available to every template.
+    @app.context_processor
+    def inject_flags():
+        return {"google_enabled": app.config.get("GOOGLE_ENABLED", False)}
 
     # Register blueprints.
     from .blueprints.scraper_routes import bp as scraper_bp

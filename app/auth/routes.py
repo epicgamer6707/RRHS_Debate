@@ -5,10 +5,10 @@ blueprint later.
 """
 from urllib.parse import urlparse
 
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 
-from ..extensions import db
+from ..extensions import db, oauth
 from ..models import User
 from .forms import SignupForm, LoginForm
 
@@ -72,3 +72,47 @@ def logout():
     logout_user()
     flash("You've been signed out.", "info")
     return redirect(url_for("auth.login"))
+
+
+# ── Google OAuth ──────────────────────────────────────────────────────────────
+@bp.route("/login/google")
+def google_login():
+    if not current_app.config.get("GOOGLE_ENABLED"):
+        flash("Google sign-in isn't configured yet.", "error")
+        return redirect(url_for("auth.login"))
+    redirect_uri = url_for("auth.google_callback", _external=True)
+    return oauth.google.authorize_redirect(redirect_uri)
+
+
+@bp.route("/login/google/callback")
+def google_callback():
+    if not current_app.config.get("GOOGLE_ENABLED"):
+        flash("Google sign-in isn't configured yet.", "error")
+        return redirect(url_for("auth.login"))
+
+    try:
+        token = oauth.google.authorize_access_token()
+    except Exception:
+        flash("Google sign-in failed or was cancelled.", "error")
+        return redirect(url_for("auth.login"))
+
+    info = token.get("userinfo") or {}
+    sub = info.get("sub")
+    email = (info.get("email") or "").strip().lower()
+    if not sub or not email:
+        flash("Google didn't return your email. Please try another method.", "error")
+        return redirect(url_for("auth.login"))
+
+    # Match by Google id first, then by email (link an existing password account).
+    user = User.query.filter_by(google_id=sub).first()
+    if user is None:
+        user = User.query.filter_by(email=email).first()
+        if user is None:
+            user = User(email=email, name=info.get("name", ""), google_id=sub)
+            db.session.add(user)
+        else:
+            user.google_id = sub
+        db.session.commit()
+
+    login_user(user)
+    return redirect(url_for("main.dashboard"))
