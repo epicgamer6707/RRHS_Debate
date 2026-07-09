@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Local database
+*.db
+app.db
+
+# Env / secrets
+.env
+
+# OS
+.DS_Store

@@ -1,0 +1,68 @@
+"""Card scraper routes.
+
+For Phase 1 the scraper still lives at "/" so the app behaves exactly as before.
+In Phase 3 the landing page takes over "/" and this moves under the dashboard.
+"""
+import json
+import queue as q_mod
+
+from flask import Blueprint, render_template, request, jsonify, Response, stream_with_context
+
+from ..scraper import submit_scrape, worker_status
+
+bp = Blueprint("scraper", __name__)
+
+
+@bp.route("/")
+def home():
+    return render_template("scraper.html")
+
+
+@bp.route("/ping")
+def ping():
+    return jsonify(worker_status())
+
+
+@bp.route("/run-automation")
+def run_automation():
+    query = request.args.get("query", "").strip()
+    year = request.args.get("year", "all").strip()
+    event = request.args.get("event", "all").strip()
+
+    if not query:
+        def err_gen():
+            yield f'data: {json.dumps({"type": "error", "error": "No query provided"})}\n\n'
+        return Response(stream_with_context(err_gen()), mimetype="text/event-stream")
+
+    out_q = submit_scrape(query, year, event)
+
+    def generate():
+        while True:
+            try:
+                item = out_q.get(timeout=60)
+            except q_mod.Empty:
+                yield f'data: {json.dumps({"type": "error", "error": "Timed out waiting for card"})}\n\n'
+                return
+
+            kind = item[0]
+            if kind == "progress":
+                _, current, total = item
+                yield f'data: {json.dumps({"type": "progress", "current": current, "total": total})}\n\n'
+            elif kind == "card":
+                _, card = item
+                card["type"] = "result"
+                yield f'data: {json.dumps(card)}\n\n'
+            elif kind == "done":
+                _, count = item
+                yield f'data: {json.dumps({"type": "done", "count": count})}\n\n'
+                return
+            elif kind == "err":
+                _, msg = item
+                yield f'data: {json.dumps({"type": "error", "error": msg})}\n\n'
+                return
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
