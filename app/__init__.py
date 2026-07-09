@@ -2,6 +2,7 @@
 import os
 
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from .config import Config
 from .extensions import db, login_manager, oauth
@@ -10,6 +11,10 @@ from .extensions import db, login_manager, oauth
 def create_app(config_object=Config):
     app = Flask(__name__)
     app.config.from_object(config_object)
+
+    # Behind Railway's proxy: trust X-Forwarded-Proto/Host so url_for(_external=True)
+    # builds https:// URLs (needed for the Google OAuth redirect URI to match).
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     db.init_app(app)
     login_manager.init_app(app)
