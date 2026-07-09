@@ -7,13 +7,15 @@ import json
 import queue as q_mod
 
 from flask import Blueprint, render_template, request, jsonify, Response, stream_with_context
+from flask_login import login_required
 
 from ..scraper import submit_scrape, worker_status
 
 bp = Blueprint("scraper", __name__)
 
 
-@bp.route("/")
+@bp.route("/scraper")
+@login_required
 def home():
     return render_template("scraper.html")
 
@@ -24,6 +26,7 @@ def ping():
 
 
 @bp.route("/run-automation")
+@login_required
 def run_automation():
     query = request.args.get("query", "").strip()
     year = request.args.get("year", "all").strip()

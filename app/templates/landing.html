@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}RRHS Debate — evidence workspace{% endblock %}
+{% block body %}
+<div class="landing">
+  <header class="landing-nav">
+    <div class="brand" style="margin-bottom:0;">
+      <div class="brand-icon">
+        <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 2h12v1.5H9.5V8H7V3.5H2V2zm0 6.5h5.5V14h1V8.5H14V7H2v1.5z"/>
+        </svg>
+      </div>
+      <div class="brand-name">RRHS <span>Debate</span></div>
+    </div>
+    <div class="landing-nav-actions">
+      <a class="btn-inline" href="{{ url_for('auth.login') }}">Sign in</a>
+      <a class="btn-inline primary" href="{{ url_for('auth.signup') }}">Get started</a>
+    </div>
+  </header>
+
+  <main class="hero">
+    <h1 class="hero-title">The RRHS Debate<br><span>evidence workspace</span></h1>
+    <p class="hero-sub">
+      Scrape and format cards, build your personal library, and sign up for
+      tournaments — all in one place, built for the team.
+    </p>
+    <div class="hero-actions">
+      <a class="btn-inline primary lg" href="{{ url_for('auth.signup') }}">Create your account</a>
+      <a class="btn-inline lg" href="{{ url_for('auth.login') }}">Sign in</a>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature">
+        <div class="feature-ic">🃏</div>
+        <h3>Card Scraper</h3>
+        <p>Pull evidence and format it cleanly in seconds.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-ic">📅</div>
+        <h3>Competition Sign-up</h3>
+        <p>Register for tournaments straight from a Tabroom link.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-ic">📚</div>
+        <h3>Library</h3>
+        <p>Save and organize your strongest cards.</p>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
