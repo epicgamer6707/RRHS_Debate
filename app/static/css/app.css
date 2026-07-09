@@ -91,6 +91,13 @@ a:hover { text-decoration: underline; }
 }
 .checkbox input { accent-color: var(--accent); cursor: pointer; }
 
+.auth-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 15px;
+}
+.auth-row .checkbox { margin-bottom: 0; }
+.auth-row-link { font-size: 13px; }
+
 /* ── buttons ── */
 .btn {
     display: inline-flex;

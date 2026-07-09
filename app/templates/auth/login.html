@@ -33,7 +33,10 @@
         {{ form.password(placeholder="••••••••") }}
         {% for e in form.password.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
       </div>
-      <label class="checkbox">{{ form.remember() }} Keep me signed in</label>
+      <div class="auth-row">
+        <label class="checkbox">{{ form.remember() }} Keep me signed in</label>
+        <a class="auth-row-link" href="{{ url_for('auth.forgot') }}">Forgot password?</a>
+      </div>
       <button class="btn btn-primary" type="submit">Sign in</button>
     </form>
 

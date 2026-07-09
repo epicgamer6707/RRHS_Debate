@@ -10,7 +10,9 @@ from flask_login import login_user, logout_user, login_required, current_user
 
 from ..extensions import db, oauth
 from ..models import User
-from .forms import SignupForm, LoginForm
+from ..email import send_password_reset
+from .forms import SignupForm, LoginForm, ForgotForm, ResetPasswordForm
+from .tokens import generate_reset_token, verify_reset_token
 
 bp = Blueprint("auth", __name__)
 
@@ -72,6 +74,47 @@ def logout():
     logout_user()
     flash("You've been signed out.", "info")
     return redirect(url_for("auth.login"))
+
+
+# ── Forgot / reset password ───────────────────────────────────────────────────
+@bp.route("/forgot", methods=["GET", "POST"])
+def forgot():
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+
+    form = ForgotForm()
+    if form.validate_on_submit():
+        email = form.email.data.strip().lower()
+        user = User.query.filter_by(email=email).first()
+        if user:
+            token = generate_reset_token(user)
+            reset_url = url_for("auth.reset_password", token=token, _external=True)
+            send_password_reset(user, reset_url)
+        # Always show the same message — don't reveal whether an email exists.
+        flash("If that email has an account, we've sent a reset link.", "info")
+        return redirect(url_for("auth.login"))
+
+    return render_template("auth/forgot.html", form=form)
+
+
+@bp.route("/reset/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+
+    user = verify_reset_token(token)
+    if user is None:
+        flash("That reset link is invalid or has expired. Request a new one.", "error")
+        return redirect(url_for("auth.forgot"))
+
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user.set_password(form.password.data)
+        db.session.commit()  # changes the hash, invalidating this (now-used) token
+        flash("Your password has been reset. Please sign in.", "success")
+        return redirect(url_for("auth.login"))
+
+    return render_template("auth/reset.html", form=form)
 
 
 # ── Google OAuth ──────────────────────────────────────────────────────────────

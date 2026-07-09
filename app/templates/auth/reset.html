@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Choose a new password · RRHS Debate{% endblock %}
+{% block body %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 2h12v1.5H9.5V8H7V3.5H2V2zm0 6.5h5.5V14h1V8.5H14V7H2v1.5z"/>
+        </svg>
+      </div>
+      <div class="brand-name">RRHS <span>Debate</span></div>
+    </div>
+
+    <div class="auth-title">Choose a new password</div>
+    <div class="auth-sub">Enter a new password for your account.</div>
+
+    {% include "_flashes.html" %}
+
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="field">
+        {{ form.password.label }}
+        {{ form.password(placeholder="At least 8 characters") }}
+        {% for e in form.password.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="field">
+        {{ form.confirm.label }}
+        {{ form.confirm(placeholder="Re-enter password") }}
+        {% for e in form.confirm.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+      </div>
+      <button class="btn btn-primary" type="submit">Reset password</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

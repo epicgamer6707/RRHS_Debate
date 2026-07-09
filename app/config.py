@@ -29,3 +29,9 @@ class Config:
     GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "").strip()
     # Only offer "Sign in with Google" once both credentials are configured.
     GOOGLE_ENABLED = bool(GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET)
+
+    # Email (Resend) — used for password-reset links.
+    RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "").strip()
+    # Resend gives everyone onboarding@resend.dev for testing without a domain.
+    MAIL_FROM = os.environ.get("MAIL_FROM", "RRHS Debate <onboarding@resend.dev>").strip()
+    EMAIL_ENABLED = bool(RESEND_API_KEY)
