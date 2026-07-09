@@ -1,0 +1,33 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   RRHS Debate — shared brand theme.
+   Palette from the "Type Terms" navy/cyan scheme. Loaded on every page so the
+   scraper, login, dashboard, etc. all share one source of truth.
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+    /* Raw brand palette */
+    --c-navy:  #25274D;
+    --c-slate: #464866;
+    --c-gray:  #AAABB8;
+    --c-cyan:  #2E9CCA;
+    --c-blue:  #29648A;
+
+    /* Dark-UI surfaces (derived) */
+    --surface-0: #1d1f3d;   /* deepest background         */
+    --surface-1: #25274D;   /* navy panels / bars         */
+    --surface-2: #2f3160;   /* raised cards / inputs       */
+    --surface-3: #464866;   /* slate — hover / higher lift */
+
+    /* Text on dark surfaces */
+    --text-hi:  #edeef5;    /* primary   */
+    --text-mid: #aaabb8;    /* secondary */
+    --text-lo:  #7d80a0;    /* muted     */
+
+    /* Accents */
+    --accent:      #2E9CCA; /* cyan — primary action      */
+    --accent-2:    #29648A; /* blue — hover / secondary   */
+    --accent-soft: rgba(46, 156, 202, 0.15);
+
+    /* Hairlines on dark surfaces */
+    --line:    rgba(255, 255, 255, 0.08);
+    --line-md: rgba(255, 255, 255, 0.15);
+}

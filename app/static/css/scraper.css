@@ -2,23 +2,28 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-    --bg:       #f3f0e8;
-    --bg-panel: #ece9e1;
-    --bg-card:  #f8f6f1;
-    --bg-right: #faf8f4;
-    --border:   rgba(0,0,0,0.09);
-    --border-md:rgba(0,0,0,0.14);
-    --text:     #1c1916;
-    --text-2:   #5c5751;
-    --text-3:   #9a958f;
-    --blue:     #2d5be3;
-    --blue-lt:  #eef2ff;
-    --blue-bd:  #93aef8;
-    --green:    #16803c;
-    --shadow-sm:0 1px 3px rgba(0,0,0,0.07);
-    --shadow:   0 2px 8px rgba(0,0,0,0.10);
+    --bg:       var(--surface-0);
+    --bg-panel: var(--surface-1);
+    --bg-card:  var(--surface-2);
+    --bg-right: #eceef4;              /* light reading pane — keeps evidence readable */
+    --border:   var(--line);
+    --border-md:var(--line-md);
+    --text:     var(--text-hi);
+    --text-2:   var(--text-mid);
+    --text-3:   var(--text-lo);
+    --blue:     var(--accent);
+    --blue-lt:  var(--accent-soft);
+    --blue-bd:  var(--accent);
+    --green:    #34c98b;
+    --shadow-sm:0 1px 3px rgba(0,0,0,0.30);
+    --shadow:   0 2px 10px rgba(0,0,0,0.40);
     --radius:   9px;
     --radius-sm:6px;
+
+    /* reading-pane specific (dark text on the light document surface) */
+    --read-text:   #1b1d38;
+    --read-text-2: #52557a;
+    --read-line:   rgba(0,0,0,0.12);
 }
 
 body {
@@ -80,7 +85,7 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--border-md);
     border-radius: var(--radius);
     padding: 0 6px 0 12px;
@@ -90,7 +95,7 @@ body {
 
 .search-wrap:focus-within {
     border-color: var(--blue);
-    box-shadow: 0 0 0 3px rgba(45,91,227,0.12);
+    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .search-wrap input {
@@ -120,7 +125,7 @@ body {
     flex-shrink: 0;
 }
 
-.btn-search:hover { background: #1d4fd6; }
+.btn-search:hover { background: var(--accent-2); }
 .btn-search:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-copyall {
@@ -166,7 +171,7 @@ body {
     font-size: 12.5px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-md);
-    background: white;
+    background: var(--bg-card);
     color: var(--text);
     cursor: pointer;
     outline: none;
@@ -206,7 +211,7 @@ body {
 }
 
 .hl-btn:hover { transform: scale(1.1); }
-.hl-btn.active { border-color: #1e3a8a; box-shadow: 0 0 0 1px #1e3a8a; }
+.hl-btn.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 #hlY { background: #fde68a; color: #78350f; }
 #hlG { background: #bbf7d0; color: #14532d; }
 #hlB { background: #bfdbfe; color: #1e3a8a; }
@@ -326,7 +331,7 @@ body {
 .card-item {
     width: 100%;
     text-align: left;
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 10px 12px;
@@ -391,7 +396,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    color: var(--text-3);
+    color: var(--read-text-2);
     font-size: 14px;
 }
 
@@ -410,13 +415,13 @@ body {
     gap: 16px;
     margin-bottom: 20px;
     padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--read-line);
 }
 
 .right-title {
     font-size: 17px;
     font-weight: 700;
-    color: var(--text);
+    color: var(--read-text);
     line-height: 1.35;
     flex: 1;
     letter-spacing: -0.2px;
@@ -427,7 +432,7 @@ body {
     align-items: center;
     gap: 6px;
     padding: 7px 14px;
-    background: var(--text);
+    background: var(--accent);
     color: white;
     border: none;
     border-radius: var(--radius-sm);
@@ -439,7 +444,7 @@ body {
     transition: background 0.15s;
 }
 
-.btn-copy:hover { background: #333; }
+.btn-copy:hover { background: var(--accent-2); }
 .btn-copy.copied { background: var(--green); }
 
 .btn-copy svg {
@@ -451,7 +456,7 @@ body {
 
 .right-content {
     line-height: 1.8;
-    color: var(--text);
+    color: var(--read-text);
     word-break: break-word;
 }
 
