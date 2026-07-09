@@ -3,6 +3,7 @@
 Local dev:   python wsgi.py
 Production:  gunicorn wsgi:app   (Railway)
 """
+# Redeploy trigger — verifying Postgres persistence across deploys.
 import os
 
 from app import create_app
