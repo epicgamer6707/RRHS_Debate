@@ -155,12 +155,20 @@ function showCard(idx) {
         <div class="right-card-wrap">
             <div class="right-meta">
                 <div class="right-title">${escHtml(card.title || "Card " + (idx+1))}</div>
-                <button class="btn-copy" id="copyBtn" onclick="copyCard(${idx})">
-                    <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 4v-2.5A1.5 1.5 0 015.5 0h7A1.5 1.5 0 0114 1.5v10A1.5 1.5 0 0112.5 13H11v1.5A1.5 1.5 0 019.5 16h-6A1.5 1.5 0 012 14.5v-9A1.5 1.5 0 013.5 4H4zm1.5 0h4A1.5 1.5 0 0111 5.5V11h1.5a.5.5 0 00.5-.5v-9a.5.5 0 00-.5-.5h-7a.5.5 0 00-.5.5V4zM3.5 5a.5.5 0 00-.5.5v9a.5.5 0 00.5.5h6a.5.5 0 00.5-.5v-9a.5.5 0 00-.5-.5h-6z"/>
-                    </svg>
-                    Copy
-                </button>
+                <div class="right-actions">
+                    <button class="btn-save" id="saveBtn" onclick="saveCard(${idx})">
+                        <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 2a1 1 0 00-1 1v11.5a.5.5 0 00.79.407L8 11.118l5.21 3.789A.5.5 0 0014 14.5V3a1 1 0 00-1-1H3z"/>
+                        </svg>
+                        Save
+                    </button>
+                    <button class="btn-copy" id="copyBtn" onclick="copyCard(${idx})">
+                        <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 4v-2.5A1.5 1.5 0 015.5 0h7A1.5 1.5 0 0114 1.5v10A1.5 1.5 0 0112.5 13H11v1.5A1.5 1.5 0 019.5 16h-6A1.5 1.5 0 012 14.5v-9A1.5 1.5 0 013.5 4H4zm1.5 0h4A1.5 1.5 0 0111 5.5V11h1.5a.5.5 0 00.5-.5v-9a.5.5 0 00-.5-.5h-7a.5.5 0 00-.5.5V4zM3.5 5a.5.5 0 00-.5.5v9a.5.5 0 00.5.5h6a.5.5 0 00.5-.5v-9a.5.5 0 00-.5-.5h-6z"/>
+                        </svg>
+                        Copy
+                    </button>
+                </div>
             </div>
             <div class="right-content">${card.html || escHtml(card.text)}</div>
         </div>`;
@@ -189,6 +197,40 @@ function copyCard(idx) {
                 Copy`;
         }, 2000);
     });
+}
+
+// ── save to library ────────────────────────────────────────────────────────────
+function csrfToken() {
+    const m = document.querySelector('meta[name="csrf-token"]');
+    return m ? m.getAttribute("content") : "";
+}
+
+function saveCard(idx) {
+    const card = allResults[idx];
+    if (!card) return;
+    const btn = document.getElementById("saveBtn");
+
+    fetch("/library/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken() },
+        body: JSON.stringify({ title: card.title, text: card.text, html: card.html }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!btn) return;
+        if (data.ok) {
+            btn.classList.add("saved");
+            btn.innerHTML = `
+                <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="white">
+                    <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/>
+                </svg>
+                Saved`;
+            btn.disabled = true;
+        } else {
+            btn.textContent = data.error || "Error";
+        }
+    })
+    .catch(() => { if (btn) btn.textContent = "Error"; });
 }
 
 function copyAll() {

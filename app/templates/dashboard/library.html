@@ -1,12 +1,78 @@
 {% extends "dashboard/layout.html" %}
 {% block title %}Library · RRHS Debate{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/scraper.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/library.css') }}">
+<style id="fmtStyle"></style>
+{% endblock %}
+
 {% block tool %}
-<div class="tool-empty">
-  <div class="tool-empty-icon">📚</div>
-  <h2>Your Library</h2>
-  <p>
-    Coming soon — cards you save from the Card Scraper will show up here so you
-    can find and reuse your best evidence.
-  </p>
+<div class="lib-wrap">
+
+  <div class="lib-toolbar">
+    <div class="lib-search-wrap">
+      <input id="libSearch" class="lib-search" oninput="libSearch()"
+             placeholder="Search your saved cards — every word…" autocomplete="off">
+    </div>
+    <div class="lib-fmt">
+      <span class="filter-label">Font</span>
+      <select class="fb-select" id="libFont" onchange="applyLibFormat()">
+        <option value="Calibri,'Segoe UI',Arial,sans-serif">Calibri</option>
+        <option value="Arial,Helvetica,sans-serif">Arial</option>
+        <option value="'Times New Roman',Times,serif">Times New Roman</option>
+      </select>
+      <div class="fb-divider"></div>
+      <span class="filter-label">Highlight</span>
+      <div class="hl-group">
+        <button class="hl-btn active" id="hlY" onclick="setLibHL('Y')" title="Yellow">Y</button>
+        <button class="hl-btn"        id="hlG" onclick="setLibHL('G')" title="Green">G</button>
+        <button class="hl-btn"        id="hlB" onclick="setLibHL('B')" title="Blue">B</button>
+        <button class="hl-btn"        id="hlN" onclick="setLibHL('N')" title="No highlight">×</button>
+      </div>
+      <div class="fb-divider"></div>
+      <label class="var-label">
+        <input type="checkbox" id="libVar" checked onchange="applyLibFormat()">
+        Variable sizes
+      </label>
+    </div>
+  </div>
+
+  <div class="lib-scroll">
+    {% if cards %}
+      <div class="lib-count" id="libCount">{{ cards|length }} card{{ 's' if cards|length != 1 }}</div>
+      {% for c in cards %}
+      <div class="lib-card" data-id="{{ c.id }}">
+        <div class="lib-card-head" onclick="toggleCard(this)">
+          <span class="lib-chevron">▸</span>
+          <div class="lib-card-main">
+            <div class="lib-card-title">{{ c.title or 'Untitled card' }}</div>
+            <div class="lib-card-preview">{{ c.text[:180] }}{% if c.text|length > 180 %}…{% endif %}</div>
+          </div>
+          <div class="lib-card-date">{{ c.created_at.strftime('%b %d, %Y') }}</div>
+        </div>
+        <div class="lib-card-body">
+          <div class="lib-card-tools">
+            <button class="btn-copy" onclick="copyLib(event, {{ c.id }})">Copy</button>
+            <button class="btn-del" onclick="deleteLib(event, {{ c.id }})">Delete</button>
+          </div>
+          <div class="right-content">{{ (c.html or c.text)|safe }}</div>
+          <pre class="lib-raw" hidden>{{ c.text }}</pre>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="lib-empty">
+        <div class="lib-empty-icon">📚</div>
+        <h2>Your library is empty</h2>
+        <p>Open the Card Scraper, run a search, and hit <strong>Save</strong> on a card
+           to keep it here.</p>
+      </div>
+    {% endif %}
+  </div>
+
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/library.js') }}"></script>
 {% endblock %}

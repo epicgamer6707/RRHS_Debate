@@ -429,13 +429,13 @@
     letter-spacing: -0.2px;
 }
 
-.btn-copy {
+.right-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.btn-copy, .btn-save {
     display: flex;
     align-items: center;
     gap: 6px;
     padding: 7px 14px;
-    background: var(--accent);
-    color: white;
     border: none;
     border-radius: var(--radius-sm);
     cursor: pointer;
@@ -446,10 +446,17 @@
     transition: background 0.15s;
 }
 
-.btn-copy:hover { background: var(--accent-2); }
-.btn-copy.copied { background: var(--green); }
+/* Save = primary (cyan); Copy = neutral so the two read distinctly on the pane */
+.btn-save { background: var(--accent); color: #fff; }
+.btn-save:hover { background: var(--accent-2); }
+.btn-save.saved { background: var(--green); }
+.btn-save:disabled { cursor: default; }
 
-.btn-copy svg {
+.btn-copy { background: #fff; color: var(--read-text); border: 1px solid rgba(0,0,0,0.14); }
+.btn-copy:hover { background: #eef0f6; }
+.btn-copy.copied { background: var(--green); color: #fff; border-color: transparent; }
+
+.btn-copy svg, .btn-save svg {
     width: 13px;
     height: 13px;
     fill: currentColor;

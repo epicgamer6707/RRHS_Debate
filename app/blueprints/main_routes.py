@@ -6,6 +6,8 @@ Card Scraper, Sign up for Competition, and Library.
 from flask import Blueprint, render_template, redirect, url_for
 from flask_login import login_required, current_user
 
+from ..models import SavedCard
+
 bp = Blueprint("main", __name__)
 
 
@@ -39,4 +41,10 @@ def dashboard_signup():
 @bp.route("/dashboard/library")
 @login_required
 def dashboard_library():
-    return render_template("dashboard/library.html", active="library")
+    cards = (
+        SavedCard.query
+        .filter_by(user_id=current_user.id)
+        .order_by(SavedCard.created_at.desc())
+        .all()
+    )
+    return render_template("dashboard/library.html", active="library", cards=cards)
