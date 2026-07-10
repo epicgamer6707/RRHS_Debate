@@ -35,3 +35,7 @@ class Config:
     # Resend gives everyone onboarding@resend.dev for testing without a domain.
     MAIL_FROM = os.environ.get("MAIL_FROM", "RRHS Debate <onboarding@resend.dev>").strip()
     EMAIL_ENABLED = bool(RESEND_API_KEY)
+
+    # Slack — incoming webhook for the officers' channel (competition signups).
+    SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
+    SLACK_ENABLED = bool(SLACK_WEBHOOK_URL)

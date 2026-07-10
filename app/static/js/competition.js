@@ -54,14 +54,35 @@ function sendSignup() {
         ? document.getElementById("mDate").value.trim()
         : (scraped ? scraped.date : "");
     const event = document.getElementById("eventSel").value;
+    const location = scraped ? scraped.location : "";
+    const url = scraped ? scraped.url : "";
 
-    // Placeholder — no send yet. Just confirm what WOULD be sent.
     const note = document.getElementById("sendNote");
-    note.innerHTML =
-        "✓ Details confirmed. (Sending to the officers' Slack isn't wired up yet.)<br>" +
-        "<strong>Would send:</strong> " + escHtml(name || "—") +
-        " · " + escHtml(date || "—") + " · " + escHtml(event);
-    note.hidden = false;
+    const btn = document.getElementById("sendBtn");
+    if (!name) { note.textContent = "Add a tournament name first."; note.hidden = false; return; }
+
+    btn.disabled = true;
+    btn.textContent = "Sending…";
+
+    fetch("/competition/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken() },
+        body: JSON.stringify({ name, date, location, event, url }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!data.ok) { note.textContent = data.error || "Couldn't send."; note.hidden = false; return; }
+        if (data.delivered) {
+            note.innerHTML = "✅ Sent to the officers' Slack — they'll get you registered for <strong>" +
+                escHtml(name) + "</strong> (" + escHtml(event) + ").";
+        } else {
+            note.innerHTML = "✓ Confirmed, but the officers' Slack isn't set up yet, so nothing was sent.<br>" +
+                "<strong>Would send:</strong> " + escHtml(name) + " · " + escHtml(date || "—") + " · " + escHtml(event);
+        }
+        note.hidden = false;
+    })
+    .catch(() => { note.textContent = "Something went wrong. Try again."; note.hidden = false; })
+    .finally(() => { btn.disabled = false; btn.textContent = "Send to officers"; });
 }
 
 function escHtml(s) {
