@@ -1,5 +1,5 @@
 {% extends "dashboard/layout.html" %}
-{% block title %}Card Scraper · RRHS Debate{% endblock %}
+{% block title %}Card Finder{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/scraper.css') }}">
 <style id="fmtStyle"></style>
@@ -78,7 +78,7 @@
   <!-- ── statusbar ── -->
   <div class="statusbar">
     <div class="spinner" id="spinner"></div>
-    <span class="status-text" id="status">Ready — enter a search above.</span>
+    <span class="status-text" id="status">Ready. Enter a search above.</span>
   </div>
 
   <!-- ── panels ── -->
@@ -90,7 +90,6 @@
       </div>
       <div class="left-scroll" id="leftPanel">
         <div class="left-empty">
-          <div class="left-empty-icon">🗂</div>
           <span>Results will appear here</span>
         </div>
       </div>
@@ -98,7 +97,6 @@
 
     <div class="right-panel" id="rightPanel">
       <div class="right-empty">
-        <div class="right-empty-icon">📄</div>
         <span>Select a card to read it</span>
       </div>
     </div>

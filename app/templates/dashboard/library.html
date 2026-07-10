@@ -1,5 +1,5 @@
 {% extends "dashboard/layout.html" %}
-{% block title %}Library · RRHS Debate{% endblock %}
+{% block title %}Library{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/scraper.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/library.css') }}">
@@ -12,7 +12,7 @@
   <div class="lib-toolbar">
     <div class="lib-search-wrap">
       <input id="libSearch" class="lib-search" oninput="libSearch()"
-             placeholder="Search your saved cards — every word…" autocomplete="off">
+             placeholder="Search your saved cards, every word" autocomplete="off">
     </div>
     <div class="lib-fmt">
       <span class="filter-label">Font</span>
@@ -62,9 +62,8 @@
       {% endfor %}
     {% else %}
       <div class="lib-empty">
-        <div class="lib-empty-icon">📚</div>
         <h2>Your library is empty</h2>
-        <p>Open the Card Scraper, run a search, and hit <strong>Save</strong> on a card
+        <p>Open the Card Finder or Card Cutter, then hit <strong>Save</strong> on a card
            to keep it here.</p>
       </div>
     {% endif %}

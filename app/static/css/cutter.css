@@ -41,6 +41,7 @@
 .cut-input::placeholder { color: var(--text-lo); }
 .cut-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .cut-textarea { min-height: 160px; resize: vertical; line-height: 1.5; }
+.cut-cite-input { min-height: 72px; resize: vertical; line-height: 1.5; font-size: 13px; }
 
 .cut-file { color: var(--text-mid); font-size: 13px; }
 .cut-file-hint { margin-top: 6px; font-size: 12px; color: var(--text-lo); }
@@ -82,3 +83,10 @@
 
 .cut-actions { display: flex; align-items: center; gap: 14px; }
 .cut-note { font-size: 13px; color: #8ff0c2; }
+
+/* ── Citation Maker ── */
+.cite-fetchrow { display: flex; gap: 10px; }
+.cite-fetchrow .cut-input { flex: 1; }
+.cite-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; margin-top: 4px; }
+.cite-grid .cite-span { grid-column: 1 / -1; }
+.cite-preview { min-height: 88px; resize: vertical; line-height: 1.5; font-size: 13px; }

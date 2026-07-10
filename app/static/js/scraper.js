@@ -55,10 +55,10 @@ function runSearch() {
     allResults = []; activeIdx = -1;
 
     document.getElementById("leftPanel").innerHTML =
-        '<div class="left-empty"><div class="left-empty-icon">⏳</div><span>Scraping…</span></div>';
+        '<div class="left-empty"><span>Scraping...</span></div>';
     document.getElementById("leftCount").textContent = "0";
     document.getElementById("rightPanel").innerHTML =
-        '<div class="right-empty"><div class="right-empty-icon">⏳</div><span>Loading…</span></div>';
+        '<div class="right-empty"><span>Loading...</span></div>';
     document.getElementById("copyAllBtn").style.display = "none";
     document.getElementById("spinner").style.display = "block";
     document.getElementById("status").textContent = "Connecting to Haku…";
@@ -102,14 +102,14 @@ function runSearch() {
         } else if (msg.type === "error") {
             document.getElementById("status").textContent = "Error: " + msg.error;
             document.getElementById("rightPanel").innerHTML =
-                `<div class="right-empty"><div class="right-empty-icon">⚠️</div><span>${escHtml(msg.error)}</span></div>`;
+                `<div class="right-empty"><span>${escHtml(msg.error)}</span></div>`;
             finish();
         }
     };
 
     src.onerror = function() {
         if (src !== currentSrc) return;
-        document.getElementById("status").textContent = "Connection error — check terminal.";
+        document.getElementById("status").textContent = "Connection error. Please try again.";
         finish();
     };
 

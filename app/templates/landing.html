@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}RRHS Debate — evidence workspace{% endblock %}
+{% block title %}RRHS Debate{% endblock %}
 {% block body %}
 <div class="landing">
   <header class="landing-nav">
@@ -20,8 +20,8 @@
   <main class="hero">
     <h1 class="hero-title">The RRHS Debate<br><span>evidence workspace</span></h1>
     <p class="hero-sub">
-      Scrape and format cards, build your personal library, and sign up for
-      tournaments — all in one place, built for the team.
+      Find and format cards, build your personal library, and sign up for
+      tournaments, all in one place, built for the team.
     </p>
     <div class="hero-actions">
       <a class="btn-inline primary lg" href="{{ url_for('auth.signup') }}">Create your account</a>
@@ -30,17 +30,14 @@
 
     <div class="feature-row">
       <div class="feature">
-        <div class="feature-ic">🃏</div>
-        <h3>Card Scraper</h3>
-        <p>Pull evidence and format it cleanly in seconds.</p>
+        <h3>Card Finder</h3>
+        <p>Find evidence and format it cleanly in seconds.</p>
       </div>
       <div class="feature">
-        <div class="feature-ic">📅</div>
         <h3>Competition Sign-up</h3>
         <p>Register for tournaments straight from a Tabroom link.</p>
       </div>
       <div class="feature">
-        <div class="feature-ic">📚</div>
         <h3>Library</h3>
         <p>Save and organize your strongest cards.</p>
       </div>

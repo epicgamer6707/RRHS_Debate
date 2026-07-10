@@ -44,6 +44,12 @@ def dashboard_cutter():
     return render_template("dashboard/cutter.html", active="cutter")
 
 
+@bp.route("/dashboard/citation")
+@login_required
+def dashboard_citation():
+    return render_template("dashboard/citation.html", active="citation")
+
+
 @bp.route("/dashboard/library")
 @login_required
 def dashboard_library():

@@ -14,6 +14,7 @@ from html import escape
 import trafilatura
 
 from .scraper import submit_fetch
+from .citation import citation_fields, format_citation
 
 _HL = 'rgb(253,230,138)'  # same yellow the scraper/library use
 
@@ -158,30 +159,18 @@ def cut_card(meta, query):
             parts.append(escape(s))
     passage_html = " ".join(parts)
 
-    author, date = _clean_author(meta.get("author", "")), meta.get("date", "")
-    cite_head = _cite_head(author, date)
+    author = _clean_author(meta.get("author", ""))
+    cite_head = _cite_head(author, meta.get("date", ""))
     tag = _draft_tag(sentences, kws, cite_head)
 
-    cite_bits = [b for b in [
-        author or None,  # already cleaned above
-        meta.get("date") or None,
-        (f'"{meta["title"]}"' if meta.get("title") else None),
-        meta.get("source") or None,
-        meta.get("url") or None,
-    ] if b]
-    citation = ", ".join(cite_bits)
+    fields = citation_fields({**meta, "author": author})
+    citation = format_citation(**fields)
 
-    plain = f"{tag}\n\n{citation}\n\n{best}"
-    html = (
-        f'<p><strong>{escape(citation)}</strong></p>'
-        f'<p>{passage_html}</p>'
-    )
     return {
         "ok": True,
         "tag": tag,
         "citation": citation,
         "passage_html": passage_html,
-        "html": html,
-        "text": plain,
+        "passage_text": best,
         "matched": bool(kws and score(best) > 0),
     }

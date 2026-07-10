@@ -1,20 +1,22 @@
-// ── Sign up for Competition: fetch Tabroom details, confirm, (placeholder) send ──
+// ── Sign up for Competition: manual details (Tabroom link optional) ────────────
 function csrfToken() {
     const m = document.querySelector('meta[name="csrf-token"]');
     return m ? m.getAttribute("content") : "";
 }
 
-let scraped = null;  // last successfully scraped tournament
+let scrapedUrl = "";
 
 function fetchTournament() {
     const url = document.getElementById("tabroomUrl").value.trim();
     const btn = document.getElementById("fetchBtn");
     const err = document.getElementById("fetchError");
+    const note = document.getElementById("fetchNote");
     err.hidden = true;
-    if (!url) { showError("Paste a Tabroom tournament link first."); return; }
+    note.hidden = true;
+    if (!url) { showError("Paste a Tabroom link, or just type the details below."); return; }
 
     btn.disabled = true;
-    btn.textContent = "Fetching…";
+    btn.textContent = "Fetching...";
 
     fetch("/competition/scrape", {
         method: "POST",
@@ -24,15 +26,12 @@ function fetchTournament() {
     .then(r => r.json())
     .then(data => {
         if (!data.ok) { showError(data.error || "Couldn't fetch that tournament."); return; }
-        scraped = data;
-        document.getElementById("dName").textContent = data.name || "—";
-        document.getElementById("dDate").textContent = data.date || "—";
-        document.getElementById("dLoc").textContent = data.location || "—";
-        // Pre-fill the manual fields with the scraped values.
-        document.getElementById("mName").value = data.name || "";
-        document.getElementById("mDate").value = data.date || "";
-        document.getElementById("details").hidden = false;
-        document.getElementById("sendNote").hidden = true;
+        scrapedUrl = data.url || url;
+        if (data.name) document.getElementById("mName").value = data.name;
+        if (data.date) document.getElementById("mDate").value = data.date;
+        if (data.location) document.getElementById("mLoc").value = data.location;
+        note.textContent = "Filled in from Tabroom. Check the details below, then send.";
+        note.hidden = false;
     })
     .catch(() => showError("Something went wrong. Try again."))
     .finally(() => { btn.disabled = false; btn.textContent = "Fetch details"; });
@@ -40,44 +39,33 @@ function fetchTournament() {
     function showError(msg) { err.textContent = msg; err.hidden = false; }
 }
 
-function toggleManual() {
-    const m = document.getElementById("manual");
-    m.hidden = !m.hidden;
-}
-
 function sendSignup() {
-    const manualShown = !document.getElementById("manual").hidden;
-    const name = manualShown
-        ? document.getElementById("mName").value.trim()
-        : (scraped ? scraped.name : "");
-    const date = manualShown
-        ? document.getElementById("mDate").value.trim()
-        : (scraped ? scraped.date : "");
+    const name = document.getElementById("mName").value.trim();
+    const date = document.getElementById("mDate").value.trim();
+    const location = document.getElementById("mLoc").value.trim();
     const event = document.getElementById("eventSel").value;
-    const location = scraped ? scraped.location : "";
-    const url = scraped ? scraped.url : "";
-
     const note = document.getElementById("sendNote");
     const btn = document.getElementById("sendBtn");
+
     if (!name) { note.textContent = "Add a tournament name first."; note.hidden = false; return; }
 
     btn.disabled = true;
-    btn.textContent = "Sending…";
+    btn.textContent = "Sending...";
 
     fetch("/competition/send", {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken() },
-        body: JSON.stringify({ name, date, location, event, url }),
+        body: JSON.stringify({ name, date, location, event, url: scrapedUrl }),
     })
     .then(r => r.json())
     .then(data => {
         if (!data.ok) { note.textContent = data.error || "Couldn't send."; note.hidden = false; return; }
         if (data.delivered) {
-            note.innerHTML = "✅ Sent to the officers' Slack — they'll get you registered for <strong>" +
+            note.innerHTML = "Sent to the officers' Slack. They'll get you registered for <strong>" +
                 escHtml(name) + "</strong> (" + escHtml(event) + ").";
         } else {
-            note.innerHTML = "✓ Confirmed, but the officers' Slack isn't set up yet, so nothing was sent.<br>" +
-                "<strong>Would send:</strong> " + escHtml(name) + " · " + escHtml(date || "—") + " · " + escHtml(event);
+            note.innerHTML = "Confirmed, but the officers' Slack isn't set up yet, so nothing was sent.<br>" +
+                "<strong>Would send:</strong> " + escHtml(name) + ", " + escHtml(date || "no date") + ", " + escHtml(event);
         }
         note.hidden = false;
     })

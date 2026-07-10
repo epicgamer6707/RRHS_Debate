@@ -1,0 +1,55 @@
+{% extends "dashboard/layout.html" %}
+{% block title %}Citation Maker{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cutter.css') }}">
+{% endblock %}
+
+{% block tool %}
+<div class="cut-wrap">
+  <div class="cut-inner">
+    <h1 class="cut-h1">Citation Maker</h1>
+    <p class="cut-sub">
+      Turn a website into a debate citation. No AI key needed (the citation is a
+      draft you can edit, so double-check it before you use it).
+    </p>
+
+    <div class="cut-field">
+      <label>Website link</label>
+      <div class="cite-fetchrow">
+        <input id="cUrl" class="cut-input" placeholder="https://article-url.com/..."
+               oninput="buildCitation()" onkeydown="if(event.key==='Enter') fetchCitation()">
+        <button id="cFetchBtn" class="cut-btn" onclick="fetchCitation()">Fetch details</button>
+      </div>
+      <div id="cErr" class="cut-error" hidden></div>
+    </div>
+
+    <div class="cite-grid">
+      <div class="cut-field"><label>Author last name</label>
+        <input id="cLast" class="cut-input" oninput="buildCitation()"></div>
+      <div class="cut-field"><label>Year</label>
+        <input id="cYear" class="cut-input" oninput="buildCitation()"></div>
+      <div class="cut-field cite-span"><label>Qualifications</label>
+        <input id="cQuals" class="cut-input" placeholder="e.g. Professor of Economics, Yale" oninput="buildCitation()"></div>
+      <div class="cut-field cite-span"><label>Title</label>
+        <input id="cTitle" class="cut-input" oninput="buildCitation()"></div>
+      <div class="cut-field"><label>Publication</label>
+        <input id="cPub" class="cut-input" oninput="buildCitation()"></div>
+      <div class="cut-field"><label>Signature</label>
+        <input id="cSig" class="cut-input" placeholder="your initials" oninput="buildCitation()"></div>
+    </div>
+
+    <div class="cut-field">
+      <label>Citation <span class="cut-dim">(edit freely)</span></label>
+      <textarea id="citePreview" class="cut-input cite-preview"></textarea>
+    </div>
+    <div class="cut-actions">
+      <button class="cut-btn" onclick="copyCitation()">Copy citation</button>
+      <span id="cCopyNote" class="cut-note" hidden>Copied.</span>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/citation.js') }}"></script>
+{% endblock %}

@@ -48,12 +48,12 @@ function cutCard() {
         if (!data.ok) { showError(data.error || "Couldn't cut a card."); return; }
         lastCut = data;
         document.getElementById("resTag").value = data.tag || "";
-        document.getElementById("resCite").textContent = data.citation || "(no citation found)";
+        document.getElementById("resCite").value = data.citation || "";
         document.getElementById("resBody").innerHTML = data.passage_html || "";
         document.getElementById("cutNote").hidden = true;
         document.getElementById("cutResult").hidden = false;
         if (!data.matched) {
-            showError("No strong match for those words — showing the opening passage. Try different keywords.");
+            showError("No strong match for those words. Showing the opening passage; try different keywords.");
         }
     })
     .catch(() => showError("Something went wrong. Try again."))
@@ -62,22 +62,30 @@ function cutCard() {
     function showError(msg) { err.textContent = msg; err.hidden = false; }
 }
 
+function escHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 function saveCut() {
     if (!lastCut) return;
     const tag = document.getElementById("resTag").value.trim() || lastCut.tag;
+    const citation = document.getElementById("resCite").value.trim();
     const btn = document.getElementById("saveCutBtn");
     const note = document.getElementById("cutNote");
     btn.disabled = true;
 
+    const html = `<p><strong>${escHtml(citation)}</strong></p><p>${lastCut.passage_html}</p>`;
+    const text = `${tag}\n\n${citation}\n\n${lastCut.passage_text}`;
+
     fetch("/library/save", {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken() },
-        body: JSON.stringify({ title: tag, text: lastCut.text, html: lastCut.html }),
+        body: JSON.stringify({ title: tag, text: text, html: html }),
     })
     .then(r => r.json())
     .then(data => {
         if (data.ok) {
-            btn.textContent = "Saved ✓";
+            btn.textContent = "Saved";
             note.textContent = "Saved to your Library.";
             note.hidden = false;
         } else {

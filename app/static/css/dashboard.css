@@ -53,6 +53,7 @@ body {
 .nav-group.collapsed .nav-group-chevron { transform: rotate(-90deg); }
 .nav-group-items { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
 .nav-group.collapsed .nav-group-items { display: none; }
+.nav-standalone { margin-top: 8px; }
 .nav-item {
     display: flex; align-items: center; gap: 11px;
     padding: 10px 12px;

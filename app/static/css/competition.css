@@ -30,6 +30,8 @@ select.comp-input { cursor: pointer; }
 
 .comp-fetchrow { display: flex; gap: 10px; }
 .comp-fetchrow .comp-input { flex: 1; }
+.comp-dim { color: var(--text-lo); font-weight: 400; }
+.comp-fillnote { margin-top: 8px; font-size: 13px; color: #8ff0c2; }
 
 .comp-btn {
     padding: 11px 18px;
