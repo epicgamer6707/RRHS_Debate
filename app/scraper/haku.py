@@ -122,33 +122,55 @@ def _scrape(page, query, year, event, out_q):
     out_q.put(("done", count))
 
 
+_UA = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36"
+)
+
+
+def _fetch_html(page, url, out_q):
+    """Load an arbitrary URL in the real browser and return its rendered HTML."""
+    try:
+        page.goto(url, wait_until="domcontentloaded", timeout=25000)
+        page.wait_for_timeout(600)
+        html = page.content()
+        out_q.put(("html", html))
+    except Exception as e:
+        out_q.put(("err", str(e)))
+
+
 def _pw_worker():
     try:
         print("[pw] starting playwright...", flush=True)
         with sync_playwright() as pw:
             browser = pw.chromium.launch(headless=True)
-            ctx = browser.new_context(permissions=["clipboard-read", "clipboard-write"])
+            ctx = browser.new_context(
+                permissions=["clipboard-read", "clipboard-write"],
+                user_agent=_UA,
+            )
             page = ctx.new_page()
             print("[pw] ready.", flush=True)
             while True:
-                item = _task_queue.get()
-                if item is None:
+                job = _task_queue.get()
+                if job is None:
                     break
-                query, year, event, out_q = item
+                out_q = job["out_q"]
                 try:
-                    _scrape(page, query, year, event, out_q)
+                    if job["kind"] == "scrape":
+                        _scrape(page, job["query"], job["year"], job["event"], out_q)
+                    elif job["kind"] == "fetch":
+                        _fetch_html(page, job["url"], out_q)
                 except Exception as e:
-                    print(f"[pw] scrape error: {e}", flush=True)
+                    print(f"[pw] job error: {e}", flush=True)
                     out_q.put(("err", str(e)))
     except Exception as e:
         print(f"[pw] WORKER CRASHED: {e}", flush=True)
         while True:
             try:
-                item = _task_queue.get_nowait()
-                if item is None:
+                job = _task_queue.get_nowait()
+                if job is None:
                     break
-                _, _, _, out_q = item
-                out_q.put(("err", f"Playwright worker crashed: {e}"))
+                job["out_q"].put(("err", f"Playwright worker crashed: {e}"))
             except Exception:
                 break
 
@@ -164,7 +186,15 @@ def submit_scrape(query, year, event):
     """Queue a scrape job and return the per-request output queue."""
     ensure_pw_thread()
     out_q = q_mod.Queue()
-    _task_queue.put((query, year, event, out_q))
+    _task_queue.put({"kind": "scrape", "query": query, "year": year, "event": event, "out_q": out_q})
+    return out_q
+
+
+def submit_fetch(url):
+    """Queue a URL fetch (real browser) and return the per-request output queue."""
+    ensure_pw_thread()
+    out_q = q_mod.Queue()
+    _task_queue.put({"kind": "fetch", "url": url, "out_q": out_q})
     return out_q
 
 

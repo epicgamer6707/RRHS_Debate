@@ -7,10 +7,13 @@ sentences, and drafts a tag heuristically. (A free LLM key could later replace
 """
 import io
 import json
+import queue as _q
 import re
 from html import escape
 
 import trafilatura
+
+from .scraper import submit_fetch
 
 _HL = 'rgb(253,230,138)'  # same yellow the scraper/library use
 
@@ -24,12 +27,27 @@ _STOP = {
 
 
 # ── source extraction ─────────────────────────────────────────────────────────
+def _fetch_html(url):
+    """Fetch rendered HTML via the real browser (handles JS + bot-blocked sites).
+
+    Falls back to trafilatura's plain fetch if the browser is unavailable.
+    """
+    try:
+        out_q = submit_fetch(url)
+        kind, payload = out_q.get(timeout=45)
+        if kind == "html" and payload:
+            return payload
+    except (_q.Empty, Exception):
+        pass
+    return trafilatura.fetch_url(url)  # fallback
+
+
 def extract_from_url(url):
-    downloaded = trafilatura.fetch_url(url)
-    if not downloaded:
+    html = _fetch_html(url)
+    if not html:
         return None
     data = trafilatura.extract(
-        downloaded, output_format="json", with_metadata=True, favor_recall=True
+        html, url=url, output_format="json", with_metadata=True, favor_recall=True
     )
     if data:
         d = json.loads(data)
@@ -41,7 +59,7 @@ def extract_from_url(url):
             "source": d.get("sitename") or d.get("hostname") or "",
             "url": d.get("source") or url,
         }
-    text = trafilatura.extract(downloaded) or ""
+    text = trafilatura.extract(html, url=url) or ""
     return {"text": text, "title": "", "author": "", "date": "", "source": "", "url": url}
 
 
@@ -73,6 +91,20 @@ def _split_sentences(para):
     return [s.strip() for s in re.split(r"(?<=[.!?])\s+", para) if s.strip()]
 
 
+_BAD_AUTHOR = re.compile(
+    r"database|authority control|wikipedia|editor|admin|http|www\.|@|cookie|subscribe",
+    re.I,
+)
+
+
+def _clean_author(author):
+    """Drop obviously-bogus author metadata (nav junk, control databases, etc.)."""
+    a = (author or "").strip()
+    if not a or len(a) > 60 or len(a.split()) > 5 or _BAD_AUTHOR.search(a):
+        return ""
+    return a
+
+
 def _cite_head(author, date):
     year = ""
     m = re.search(r"(19|20)\d{2}", date or "")
@@ -82,6 +114,9 @@ def _cite_head(author, date):
     if author:
         last = re.sub(r"[^A-Za-z ].*", "", author).strip().split()
         last = last[-1] if last else ""
+    # Only a bare year isn't a useful cite head — need an author name.
+    if not last:
+        return ""
     return " ".join(x for x in [last, year] if x).strip()
 
 
@@ -123,12 +158,12 @@ def cut_card(meta, query):
             parts.append(escape(s))
     passage_html = " ".join(parts)
 
-    author, date = meta.get("author", ""), meta.get("date", "")
+    author, date = _clean_author(meta.get("author", "")), meta.get("date", "")
     cite_head = _cite_head(author, date)
     tag = _draft_tag(sentences, kws, cite_head)
 
     cite_bits = [b for b in [
-        author or None,
+        author or None,  # already cleaned above
         meta.get("date") or None,
         (f'"{meta["title"]}"' if meta.get("title") else None),
         meta.get("source") or None,
