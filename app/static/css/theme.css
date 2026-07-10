@@ -23,9 +23,25 @@
     --text-lo:  #7d80a0;    /* muted     */
 
     /* Accents */
-    --accent:      #2E9CCA; /* cyan — primary action      */
-    --accent-2:    #29648A; /* blue — hover / secondary   */
-    --accent-soft: rgba(46, 156, 202, 0.15);
+    --accent:        #2E9CCA; /* cyan — primary action      */
+    --accent-2:      #29648A; /* blue — hover / secondary   */
+    --accent-bright: #46c2ee; /* brighter cyan for glows    */
+    --accent-soft:   rgba(46, 156, 202, 0.15);
+
+    /* Gradients + glows for pop */
+    --grad-accent:       linear-gradient(135deg, #46c2ee 0%, #2E9CCA 48%, #29648A 100%);
+    --grad-accent-hover: linear-gradient(135deg, #5accf2 0%, #34a6d6 48%, #2b6f99 100%);
+    --grad-surface:      linear-gradient(160deg, #2b2d59 0%, #23254a 100%);
+    --grad-brand:        linear-gradient(120deg, #edeef5 0%, #7fd4f2 55%, #2E9CCA 100%);
+    --glow-accent:       0 6px 22px rgba(46, 156, 202, 0.38);
+    --glow-accent-lg:    0 10px 34px rgba(46, 156, 202, 0.45);
+    --glow-soft:         0 8px 30px rgba(0, 0, 0, 0.35);
+
+    /* App backdrop: faint cyan aurora over the deep navy */
+    --app-bg:
+        radial-gradient(1100px 620px at 15% -8%, rgba(70, 194, 238, 0.12), transparent 60%),
+        radial-gradient(900px 520px at 100% 0%, rgba(41, 100, 138, 0.16), transparent 55%),
+        var(--surface-0);
 
     /* Hairlines on dark surfaces */
     --line:    rgba(255, 255, 255, 0.08);

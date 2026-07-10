@@ -6,7 +6,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-    background: var(--surface-0);
+    background: var(--app-bg) fixed;
     color: var(--text-hi);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
@@ -46,11 +46,11 @@ a:hover { text-decoration: underline; }
 .auth-card {
     width: 100%;
     max-width: 400px;
-    background: var(--surface-1);
-    border: 1px solid var(--line);
+    background: var(--grad-surface);
+    border: 1px solid var(--line-md);
     border-radius: 16px;
     padding: 32px 28px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    box-shadow: var(--glow-soft), 0 0 70px rgba(46, 156, 202, 0.14);
 }
 .auth-title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 4px; }
 .auth-sub   { font-size: 13.5px; color: var(--text-mid); text-align: center; margin-bottom: 22px; }
@@ -114,8 +114,13 @@ a:hover { text-decoration: underline; }
     cursor: pointer;
     transition: background 0.15s, opacity 0.15s;
 }
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-2); }
+.btn-primary {
+    background: var(--grad-accent); color: #fff;
+    box-shadow: var(--glow-accent);
+    transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+}
+.btn-primary:hover { background: var(--grad-accent-hover); box-shadow: var(--glow-accent-lg); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
 .btn-google {
     background: #fff; color: #1f1f1f;
     border: 1px solid var(--line-md);
@@ -173,8 +178,9 @@ a:hover { text-decoration: underline; }
     background: var(--surface-2); color: var(--text-hi);
 }
 .btn-inline:hover { background: var(--surface-3); text-decoration: none; }
-.btn-inline.primary { background: var(--accent); border-color: transparent; color: #fff; }
-.btn-inline.primary:hover { background: var(--accent-2); }
+.btn-inline { transition: transform 0.15s, box-shadow 0.15s, background 0.15s; }
+.btn-inline.primary { background: var(--grad-accent); border-color: transparent; color: #fff; box-shadow: var(--glow-accent); }
+.btn-inline.primary:hover { background: var(--grad-accent-hover); box-shadow: var(--glow-accent-lg); transform: translateY(-1px); }
 .btn-inline.lg { padding: 13px 24px; font-size: 15px; }
 
 /* ── landing page ── */
@@ -200,8 +206,14 @@ a:hover { text-decoration: underline; }
     line-height: 1.05;
     letter-spacing: -1.2px;
     margin-bottom: 20px;
+    background: var(--grad-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: drop-shadow(0 6px 34px rgba(46, 156, 202, 0.35));
 }
-.hero-title span { color: var(--accent); }
+.hero-title span { -webkit-text-fill-color: transparent; }
 .hero-sub {
     max-width: 560px;
     font-size: 17px;
@@ -223,12 +235,26 @@ a:hover { text-decoration: underline; }
 .feature {
     flex: 1;
     min-width: 220px;
-    background: var(--surface-1);
+    background: var(--grad-surface);
     border: 1px solid var(--line);
     border-radius: 14px;
     padding: 24px 22px;
     text-align: left;
+    box-shadow: var(--glow-soft);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
 }
-.feature-ic { font-size: 26px; margin-bottom: 12px; }
+.feature::before {
+    content: "";
+    position: absolute; inset: 0 0 auto 0; height: 3px;
+    background: var(--grad-accent);
+    opacity: 0.9;
+}
+.feature:hover {
+    transform: translateY(-5px);
+    border-color: rgba(70, 194, 238, 0.5);
+    box-shadow: var(--glow-accent-lg);
+}
 .feature h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
 .feature p { font-size: 13.5px; color: var(--text-mid); line-height: 1.5; }

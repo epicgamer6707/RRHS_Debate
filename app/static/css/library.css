@@ -47,12 +47,14 @@
 
 /* ── card ── */
 .lib-card {
-    background: var(--surface-1);
+    background: var(--grad-surface);
     border: 1px solid var(--line);
     border-radius: 11px;
     margin-bottom: 8px;
     overflow: hidden;
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
+.lib-card:hover { border-color: rgba(70, 194, 238, 0.3); box-shadow: var(--glow-soft); }
 .lib-card-head {
     display: flex; align-items: center; gap: 12px;
     padding: 12px 14px;
