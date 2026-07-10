@@ -37,6 +37,22 @@ body {
 .sidebar-brand .brand-name span { color: var(--accent); }
 
 .nav { flex: 1; padding: 10px 8px; display: flex; flex-direction: column; gap: 3px; }
+
+/* ── collapsible tool group ── */
+.nav-group-head {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%;
+    padding: 8px 12px 6px;
+    background: none; border: none; cursor: pointer;
+}
+.nav-group-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: var(--text-lo);
+}
+.nav-group-chevron { color: var(--text-lo); font-size: 11px; transition: transform 0.15s; }
+.nav-group.collapsed .nav-group-chevron { transform: rotate(-90deg); }
+.nav-group-items { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
+.nav-group.collapsed .nav-group-items { display: none; }
 .nav-item {
     display: flex; align-items: center; gap: 11px;
     padding: 10px 12px;

@@ -38,6 +38,12 @@ def dashboard_signup():
     return render_template("dashboard/signup.html", active="signup")
 
 
+@bp.route("/dashboard/cutter")
+@login_required
+def dashboard_cutter():
+    return render_template("dashboard/cutter.html", active="cutter")
+
+
 @bp.route("/dashboard/library")
 @login_required
 def dashboard_library():

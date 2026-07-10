@@ -22,15 +22,26 @@
     </div>
 
     <nav class="nav">
-      <a class="nav-item {{ 'active' if active == 'signup' }}" href="{{ url_for('main.dashboard_signup') }}">
-        <span class="nav-ic">📅</span> Sign up for Competition
-      </a>
-      <a class="nav-item {{ 'active' if active == 'scraper' }}" href="{{ url_for('main.dashboard_scraper') }}">
-        <span class="nav-ic">🃏</span> Card Scraper
-      </a>
-      <a class="nav-item {{ 'active' if active == 'library' }}" href="{{ url_for('main.dashboard_library') }}">
-        <span class="nav-ic">📚</span> Library
-      </a>
+      <div class="nav-group" id="toolsGroup">
+        <button class="nav-group-head" onclick="toggleToolsGroup()">
+          <span class="nav-group-title">Debate Tools</span>
+          <span class="nav-group-chevron">▾</span>
+        </button>
+        <div class="nav-group-items">
+          <a class="nav-item {{ 'active' if active == 'signup' }}" href="{{ url_for('main.dashboard_signup') }}">
+            <span class="nav-ic">📅</span> Sign up for Competition
+          </a>
+          <a class="nav-item {{ 'active' if active == 'scraper' }}" href="{{ url_for('main.dashboard_scraper') }}">
+            <span class="nav-ic">🃏</span> Card Scraper
+          </a>
+          <a class="nav-item {{ 'active' if active == 'cutter' }}" href="{{ url_for('main.dashboard_cutter') }}">
+            <span class="nav-ic">✂️</span> Card Cutter
+          </a>
+          <a class="nav-item {{ 'active' if active == 'library' }}" href="{{ url_for('main.dashboard_library') }}">
+            <span class="nav-ic">📚</span> Library
+          </a>
+        </div>
+      </div>
     </nav>
 
     <div class="sidebar-foot">
@@ -46,6 +57,19 @@
     {% block tool %}{% endblock %}
   </main>
 </div>
+
+<script>
+  // Debate Tools group: open by default, remember collapsed state.
+  (function () {
+    var group = document.getElementById("toolsGroup");
+    if (localStorage.getItem("toolsGroupCollapsed") === "1") group.classList.add("collapsed");
+  })();
+  function toggleToolsGroup() {
+    var group = document.getElementById("toolsGroup");
+    group.classList.toggle("collapsed");
+    localStorage.setItem("toolsGroupCollapsed", group.classList.contains("collapsed") ? "1" : "0");
+  }
+</script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

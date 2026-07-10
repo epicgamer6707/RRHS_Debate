@@ -6,4 +6,7 @@ flask-wtf
 email-validator
 authlib
 requests
+trafilatura
+pypdf
+python-docx
 psycopg2-binary

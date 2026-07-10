@@ -1,0 +1,65 @@
+{% extends "dashboard/layout.html" %}
+{% block title %}Card Cutter · RRHS Debate{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cutter.css') }}">
+{% endblock %}
+
+{% block tool %}
+<div class="cut-wrap">
+  <div class="cut-inner">
+    <h1 class="cut-h1">Card Cutter</h1>
+    <p class="cut-sub">
+      Give it a source and say what you want — it pulls the passage, builds the
+      citation, and drafts a tag. No AI key needed (the tag is a draft you can edit).
+    </p>
+
+    <div class="cut-modes">
+      <button class="cut-mode active" data-mode="url" onclick="setMode('url')">🔗 Link</button>
+      <button class="cut-mode" data-mode="text" onclick="setMode('text')">📝 Paste text</button>
+      <button class="cut-mode" data-mode="file" onclick="setMode('file')">📄 Upload file</button>
+    </div>
+
+    <div class="cut-source">
+      <div id="src-url" class="cut-src-panel">
+        <input id="cutUrl" class="cut-input" placeholder="https://article-url.com/…">
+      </div>
+      <div id="src-text" class="cut-src-panel" hidden>
+        <textarea id="cutText" class="cut-input cut-textarea" placeholder="Paste the article text here…"></textarea>
+      </div>
+      <div id="src-file" class="cut-src-panel" hidden>
+        <input id="cutFile" type="file" accept=".pdf,.docx,.txt" class="cut-file">
+        <div class="cut-file-hint">PDF, Word (.docx), or .txt — up to 8 MB</div>
+      </div>
+    </div>
+
+    <div class="cut-field">
+      <label>What card do you want? <span class="cut-dim">(describe the argument or keywords)</span></label>
+      <input id="cutQuery" class="cut-input"
+             placeholder="e.g. capitalism causes climate collapse"
+             onkeydown="if(event.key==='Enter') cutCard()">
+    </div>
+
+    <button id="cutBtn" class="cut-btn" onclick="cutCard()">Cut card</button>
+    <div id="cutError" class="cut-error" hidden></div>
+
+    <div id="cutResult" class="cut-result" hidden>
+      <div class="cut-field">
+        <label>Tag <span class="cut-dim">(edit to taste)</span></label>
+        <input id="resTag" class="cut-input">
+      </div>
+      <div class="cut-cite" id="resCite"></div>
+      <div class="cut-result-body">
+        <div class="right-content" id="resBody"></div>
+      </div>
+      <div class="cut-actions">
+        <button id="saveCutBtn" class="cut-btn" onclick="saveCut()">Save to Library</button>
+        <span id="cutNote" class="cut-note" hidden></span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/cutter.js') }}"></script>
+{% endblock %}

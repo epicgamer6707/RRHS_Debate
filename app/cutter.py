@@ -1,0 +1,152 @@
+"""Card Cutter — extract a debate card from a URL or uploaded file.
+
+No LLM/API key required. It pulls the article text + citation metadata, finds the
+passage most relevant to what the user asked for, highlights the matching
+sentences, and drafts a tag heuristically. (A free LLM key could later replace
+`_draft_tag` for smarter tags — everything else stays the same.)
+"""
+import io
+import json
+import re
+from html import escape
+
+import trafilatura
+
+_HL = 'rgb(253,230,138)'  # same yellow the scraper/library use
+
+_STOP = {
+    "the", "a", "an", "and", "or", "but", "of", "to", "in", "on", "for", "with",
+    "is", "are", "was", "were", "be", "been", "being", "that", "this", "these",
+    "those", "it", "its", "as", "at", "by", "from", "how", "what", "why", "who",
+    "which", "will", "would", "can", "could", "should", "do", "does", "about",
+    "card", "cards", "evidence", "want", "get", "find", "cut",
+}
+
+
+# ── source extraction ─────────────────────────────────────────────────────────
+def extract_from_url(url):
+    downloaded = trafilatura.fetch_url(url)
+    if not downloaded:
+        return None
+    data = trafilatura.extract(
+        downloaded, output_format="json", with_metadata=True, favor_recall=True
+    )
+    if data:
+        d = json.loads(data)
+        return {
+            "text": d.get("text") or "",
+            "title": d.get("title") or "",
+            "author": d.get("author") or "",
+            "date": d.get("date") or "",
+            "source": d.get("sitename") or d.get("hostname") or "",
+            "url": d.get("source") or url,
+        }
+    text = trafilatura.extract(downloaded) or ""
+    return {"text": text, "title": "", "author": "", "date": "", "source": "", "url": url}
+
+
+def extract_from_file(filename, raw_bytes):
+    name = (filename or "").lower()
+    if name.endswith(".pdf"):
+        from pypdf import PdfReader
+        reader = PdfReader(io.BytesIO(raw_bytes))
+        return "\n\n".join((pg.extract_text() or "") for pg in reader.pages)
+    if name.endswith(".docx"):
+        import docx
+        doc = docx.Document(io.BytesIO(raw_bytes))
+        return "\n\n".join(p.text for p in doc.paragraphs)
+    return raw_bytes.decode("utf-8", errors="ignore")
+
+
+# ── card cutting ──────────────────────────────────────────────────────────────
+def _keywords(query):
+    return [w for w in re.findall(r"[a-zA-Z][a-zA-Z'-]+", (query or "").lower())
+            if w not in _STOP and len(w) > 2]
+
+
+def _split_paragraphs(text):
+    paras = [p.strip() for p in re.split(r"\n{2,}", text or "")]
+    return [p for p in paras if len(p) >= 60] or ([text.strip()] if text and text.strip() else [])
+
+
+def _split_sentences(para):
+    return [s.strip() for s in re.split(r"(?<=[.!?])\s+", para) if s.strip()]
+
+
+def _cite_head(author, date):
+    year = ""
+    m = re.search(r"(19|20)\d{2}", date or "")
+    if m:
+        year = "'" + m.group(0)[2:]
+    last = ""
+    if author:
+        last = re.sub(r"[^A-Za-z ].*", "", author).strip().split()
+        last = last[-1] if last else ""
+    return " ".join(x for x in [last, year] if x).strip()
+
+
+def _draft_tag(best_sentences, keywords, cite_head):
+    """Heuristic tag: the most keyword-dense sentence, trimmed, with the cite head."""
+    if not best_sentences:
+        return cite_head or "Untitled card"
+    scored = max(best_sentences, key=lambda s: sum(s.lower().count(k) for k in keywords)) \
+        if keywords else best_sentences[0]
+    words = scored.split()
+    short = " ".join(words[:24]) + ("…" if len(words) > 24 else "")
+    return f"{cite_head} — {short}" if cite_head else short
+
+
+def cut_card(meta, query):
+    text = meta.get("text") or ""
+    if not text.strip():
+        return {"ok": False, "error": "No readable text found in that source."}
+
+    kws = _keywords(query)
+    paras = _split_paragraphs(text)
+    if not paras:
+        return {"ok": False, "error": "Couldn't split that source into readable text."}
+
+    def score(p):
+        pl = p.lower()
+        return sum(pl.count(k) for k in kws)
+
+    best = max(paras, key=score) if kws else paras[0]
+    if kws and score(best) == 0:
+        best = paras[0]  # nothing matched — fall back to the opening
+
+    sentences = _split_sentences(best)
+    parts = []
+    for s in sentences:
+        if kws and any(k in s.lower() for k in kws):
+            parts.append(f'<span style="background-color:{_HL}">{escape(s)}</span>')
+        else:
+            parts.append(escape(s))
+    passage_html = " ".join(parts)
+
+    author, date = meta.get("author", ""), meta.get("date", "")
+    cite_head = _cite_head(author, date)
+    tag = _draft_tag(sentences, kws, cite_head)
+
+    cite_bits = [b for b in [
+        author or None,
+        meta.get("date") or None,
+        (f'"{meta["title"]}"' if meta.get("title") else None),
+        meta.get("source") or None,
+        meta.get("url") or None,
+    ] if b]
+    citation = ", ".join(cite_bits)
+
+    plain = f"{tag}\n\n{citation}\n\n{best}"
+    html = (
+        f'<p><strong>{escape(citation)}</strong></p>'
+        f'<p>{passage_html}</p>'
+    )
+    return {
+        "ok": True,
+        "tag": tag,
+        "citation": citation,
+        "passage_html": passage_html,
+        "html": html,
+        "text": plain,
+        "matched": bool(kws and score(best) > 0),
+    }

@@ -52,11 +52,13 @@ def create_app(config_object=Config):
     from .blueprints.main_routes import bp as main_bp
     from .blueprints.library_routes import bp as library_bp
     from .blueprints.competition_routes import bp as competition_bp
+    from .blueprints.cutter_routes import bp as cutter_bp
     from .auth.routes import bp as auth_bp
     app.register_blueprint(scraper_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(library_bp)
     app.register_blueprint(competition_bp)
+    app.register_blueprint(cutter_bp)
     app.register_blueprint(auth_bp)
 
     # Create tables on first boot (fine for now; we'll switch to migrations later).
