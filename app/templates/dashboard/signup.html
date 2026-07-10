@@ -1,12 +1,74 @@
 {% extends "dashboard/layout.html" %}
 {% block title %}Sign up for Competition · RRHS Debate{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/competition.css') }}">
+{% endblock %}
+
 {% block tool %}
-<div class="tool-empty">
-  <div class="tool-empty-icon">📅</div>
-  <h2>Sign up for Competition</h2>
-  <p>
-    Coming soon — paste a Tabroom link, we'll pull the tournament details and
-    event, and ping an officer to get you registered.
-  </p>
+<div class="comp-wrap">
+  <div class="comp-inner">
+    <h1 class="comp-h1">Sign up for a Competition</h1>
+    <p class="comp-sub">Paste a Tabroom tournament link and we'll pull the details.</p>
+
+    <div class="comp-field">
+      <label>Tabroom tournament link</label>
+      <div class="comp-fetchrow">
+        <input id="tabroomUrl" class="comp-input"
+               placeholder="https://www.tabroom.com/index/tourn/index.mhtml?tourn_id=…"
+               onkeydown="if(event.key==='Enter') fetchTournament()">
+        <button id="fetchBtn" class="comp-btn" onclick="fetchTournament()">Fetch details</button>
+      </div>
+      <div id="fetchError" class="comp-error" hidden></div>
+    </div>
+
+    <div id="details" class="comp-card" hidden>
+      <div class="comp-card-title">Is this the right contest?</div>
+
+      <div class="comp-detail"><span>Tournament</span><strong id="dName">—</strong></div>
+      <div class="comp-detail"><span>Dates</span><strong id="dDate">—</strong></div>
+      <div class="comp-detail"><span>Location</span><strong id="dLoc">—</strong></div>
+
+      <button class="comp-link" onclick="toggleManual()">
+        Not right? <u>Enter details manually</u>
+      </button>
+
+      <div id="manual" class="comp-manual" hidden>
+        <div class="comp-field">
+          <label>Tournament name</label>
+          <input id="mName" class="comp-input">
+        </div>
+        <div class="comp-field">
+          <label>Dates</label>
+          <input id="mDate" class="comp-input">
+        </div>
+      </div>
+
+      <div class="comp-field comp-event">
+        <label>Which event are you entering?</label>
+        <select id="eventSel" class="comp-input">
+          <option value="Policy (CX)">Policy (CX)</option>
+          <option value="Lincoln-Douglas (LD)">Lincoln-Douglas (LD)</option>
+          <option value="Public Forum (PF)">Public Forum (PF)</option>
+          <option value="Congress">Congress</option>
+          <option value="World Schools">World Schools</option>
+          <option value="Big Questions">Big Questions</option>
+          <option value="Extemp (US/International)">Extemp (US/International)</option>
+          <option value="Original Oratory">Original Oratory</option>
+          <option value="Informative Speaking">Informative Speaking</option>
+          <option value="Dramatic Interp">Dramatic Interp</option>
+          <option value="Humorous Interp">Humorous Interp</option>
+          <option value="Duo Interp">Duo Interp</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <button id="sendBtn" class="comp-btn comp-btn-wide" onclick="sendSignup()">Send to officers</button>
+      <div id="sendNote" class="comp-note" hidden></div>
+    </div>
+  </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/competition.js') }}"></script>
 {% endblock %}
