@@ -176,10 +176,24 @@ function showCard(idx) {
     applyFormat();
 }
 
-// ── copy ──────────────────────────────────────────────────────────────────────
+// ── copy (rich HTML so highlights/underline/bold paste into docs) ───────────────
+function copyRich(html, plain) {
+    try {
+        if (navigator.clipboard && window.ClipboardItem) {
+            const item = new ClipboardItem({
+                "text/html": new Blob([html], { type: "text/html" }),
+                "text/plain": new Blob([plain], { type: "text/plain" }),
+            });
+            return navigator.clipboard.write([item]);
+        }
+    } catch (e) { /* fall through to plain */ }
+    return navigator.clipboard.writeText(plain);
+}
+
 function copyCard(idx) {
-    // Copy the raw markdown text exactly as Haku formatted it
-    navigator.clipboard.writeText(allResults[idx].text).then(() => {
+    const card = allResults[idx];
+    const html = card.html || escHtml(card.text);
+    copyRich(html, card.text).then(() => {
         const btn = document.getElementById("copyBtn");
         if (!btn) return;
         btn.classList.add("copied");

@@ -64,17 +64,31 @@ function libSearch() {
     if (c) c.textContent = shown + (shown === 1 ? " card" : " cards");
 }
 
-// ── copy ───────────────────────────────────────────────────────────────────────
+// ── copy (rich HTML so highlights/underline/bold paste into docs) ───────────────
+function copyRich(html, plain) {
+    try {
+        if (navigator.clipboard && window.ClipboardItem) {
+            const item = new ClipboardItem({
+                "text/html": new Blob([html], { type: "text/html" }),
+                "text/plain": new Blob([plain], { type: "text/plain" }),
+            });
+            return navigator.clipboard.write([item]);
+        }
+    } catch (e) { /* fall through to plain */ }
+    return navigator.clipboard.writeText(plain);
+}
+
 function copyLib(e, id) {
     e.stopPropagation();
     const card = document.querySelector(`.lib-card[data-id="${id}"]`);
+    const html = card.querySelector(".right-content").innerHTML;
     const text = card.querySelector(".lib-raw").textContent;
     const btn = e.currentTarget;
-    navigator.clipboard.writeText(text).then(() => {
+    copyRich(html, text).then(() => {
         const orig = btn.textContent;
         btn.textContent = "Copied!";
         setTimeout(() => { btn.textContent = orig; }, 1500);
-    });
+    }).catch(() => {});
 }
 
 // ── delete ─────────────────────────────────────────────────────────────────────

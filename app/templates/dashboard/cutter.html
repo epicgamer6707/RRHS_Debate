@@ -43,6 +43,10 @@
     <div id="cutError" class="cut-error" hidden></div>
 
     <div id="cutResult" class="cut-result" hidden>
+      <div class="cut-actions cut-actions-top">
+        <button id="saveCutBtn" class="cut-btn" onclick="saveCut()">Save to Library</button>
+        <span id="cutNote" class="cut-note" hidden></span>
+      </div>
       <div class="cut-field">
         <label>Tag <span class="cut-dim">(edit before saving)</span></label>
         <input id="resTag" class="cut-input">
@@ -53,10 +57,6 @@
       </div>
       <div class="cut-result-body">
         <div class="right-content" id="resBody"></div>
-      </div>
-      <div class="cut-actions">
-        <button id="saveCutBtn" class="cut-btn" onclick="saveCut()">Save to Library</button>
-        <span id="cutNote" class="cut-note" hidden></span>
       </div>
     </div>
   </div>

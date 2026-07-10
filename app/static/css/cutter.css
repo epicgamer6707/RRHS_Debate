@@ -79,7 +79,12 @@
     border-radius: 11px; padding: 16px 18px;
     margin-bottom: 16px;
 }
-.cut-result-body .right-content { line-height: 1.8; word-break: break-word; color: #1b1d38; }
+/* Debate convention: unhighlighted context text is smaller; highlighted
+   (read-aloud) text stays full size. */
+.cut-result-body .right-content { line-height: 1.7; word-break: break-word; color: #1b1d38; font-size: 12px; }
+.cut-result-body .right-content span[style*="background"] { font-size: 15px; line-height: 1.85; }
+
+.cut-actions-top { margin-bottom: 18px; }
 
 .cut-actions { display: flex; align-items: center; gap: 14px; }
 .cut-note { font-size: 13px; color: #8ff0c2; }

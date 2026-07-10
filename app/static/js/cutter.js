@@ -74,7 +74,9 @@ function saveCut() {
     const note = document.getElementById("cutNote");
     btn.disabled = true;
 
-    const html = `<p><strong>${escHtml(citation)}</strong></p><p>${lastCut.passage_html}</p>`;
+    const html = `<p><strong>${escHtml(tag)}</strong></p>` +
+                 `<p>${escHtml(citation)}</p>` +
+                 `<p>${lastCut.passage_html}</p>`;
     const text = `${tag}\n\n${citation}\n\n${lastCut.passage_text}`;
 
     fetch("/library/save", {
