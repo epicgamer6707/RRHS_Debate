@@ -1,5 +1,6 @@
 """Application factory."""
 import os
+import time
 
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -7,10 +8,20 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from .config import Config
 from .extensions import db, login_manager, oauth, csrf
 
+# Changes every process start (i.e. every deploy) → appended to static URLs so
+# browsers fetch fresh CSS/JS after a deploy instead of serving a stale cache.
+ASSET_VERSION = str(int(time.time()))
+
 
 def create_app(config_object=Config):
     app = Flask(__name__)
     app.config.from_object(config_object)
+
+    # Cache-bust static assets: url_for('static', filename=…) gets ?v=ASSET_VERSION.
+    @app.url_defaults
+    def _static_cache_bust(endpoint, values):
+        if endpoint == "static" and "filename" in values:
+            values.setdefault("v", ASSET_VERSION)
 
     # Behind Railway's proxy: trust X-Forwarded-Proto/Host so url_for(_external=True)
     # builds https:// URLs (needed for the Google OAuth redirect URI to match).
