@@ -3,13 +3,18 @@
 {% block body %}
 <div class="landing">
   <header class="landing-nav">
-    <div class="brand" style="margin-bottom:0;">
+    <a class="brand brand-link" href="{{ url_for('main.index') }}" style="margin-bottom:0;">
       <img class="brand-logo" src="{{ url_for('static', filename='img/logo.png') }}" alt="RRHS Debate logo">
       <div class="brand-name">RRHS <span>Debate</span></div>
-    </div>
+    </a>
     <div class="landing-nav-actions">
-      <a class="btn-inline" href="{{ url_for('auth.login') }}">Sign in</a>
-      <a class="btn-inline primary" href="{{ url_for('auth.signup') }}">Get started</a>
+      {% if current_user.is_authenticated %}
+        <span class="landing-welcome">Welcome, {{ current_user.name or current_user.email }}</span>
+        <a class="btn-inline" href="{{ url_for('auth.logout') }}">Sign out</a>
+      {% else %}
+        <a class="btn-inline" href="{{ url_for('auth.login') }}">Sign in</a>
+        <a class="btn-inline primary" href="{{ url_for('auth.signup') }}">Get started</a>
+      {% endif %}
     </div>
   </header>
 
@@ -20,8 +25,12 @@
       tournaments, all in one place, built for the team.
     </p>
     <div class="hero-actions">
-      <a class="btn-inline primary lg" href="{{ url_for('auth.signup') }}">Create your account</a>
-      <a class="btn-inline lg" href="{{ url_for('auth.login') }}">Sign in</a>
+      {% if current_user.is_authenticated %}
+        <a class="btn-inline primary lg" href="{{ url_for('main.dashboard') }}">Go to your tools</a>
+      {% else %}
+        <a class="btn-inline primary lg" href="{{ url_for('auth.signup') }}">Create your account</a>
+        <a class="btn-inline lg" href="{{ url_for('auth.login') }}">Sign in</a>
+      {% endif %}
     </div>
 
     <div class="feature-row">

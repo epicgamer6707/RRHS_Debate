@@ -102,3 +102,5 @@ select.cut-input {
 .cite-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; margin-top: 4px; }
 .cite-grid .cite-span { grid-column: 1 / -1; }
 .cite-preview { min-height: 88px; resize: vertical; line-height: 1.5; font-size: 13px; }
+.cite-hint { margin-top: 6px; font-size: 12px; color: var(--text-lo); }
+.cite-hint a { color: var(--accent); }

@@ -1,0 +1,40 @@
+{% extends "dashboard/layout.html" %}
+{% block title %}Settings{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+{% endblock %}
+
+{% block tool %}
+<div class="set-wrap">
+  <div class="set-inner">
+    <h1 class="set-h1">Settings</h1>
+
+    <section class="set-card">
+      <h2 class="set-h2">Signature</h2>
+      <p class="set-desc">
+        Added to the end of every citation in the Citation Maker (after the
+        <strong>|</strong>). Usually your initials.
+      </p>
+      <div class="set-row">
+        <input id="sigInput" class="set-input" placeholder="e.g. ES">
+        <button class="set-btn" onclick="saveSignature()">Apply</button>
+      </div>
+      <div id="sigNote" class="set-note" hidden>Saved. It'll be used in the Citation Maker.</div>
+    </section>
+
+    <section class="set-card">
+      <h2 class="set-h2">Appearance</h2>
+      <p class="set-desc">The site starts in dark mode. Switch to light if you prefer.</p>
+      <label class="set-switch">
+        <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+        <span class="set-switch-track"><span class="set-switch-thumb"></span></span>
+        <span class="set-switch-label">Light mode</span>
+      </label>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+{% endblock %}

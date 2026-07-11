@@ -8,17 +8,32 @@
 <title>{% block title %}Dashboard · RRHS Debate{% endblock %}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<script>
+  // Apply saved theme early to avoid a flash.
+  (function () { try {
+    var t = localStorage.getItem("rrhsTheme");
+    if (t) document.documentElement.setAttribute("data-theme", t);
+  } catch (e) {} })();
+</script>
 {% block head %}{% endblock %}
 </head>
 <body>
-<div class="shell">
+<div class="shell" id="shell">
+  <button class="sidebar-opener" id="sidebarOpener" onclick="toggleSidebar()" title="Show menu">☰</button>
+
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <img class="brand-logo" src="{{ url_for('static', filename='img/logo.png') }}" alt="RRHS Debate logo">
-      <div class="brand-name">RRHS <span>Debate</span></div>
+      <a class="sidebar-brand-link" href="{{ url_for('main.index') }}">
+        <img class="brand-logo" src="{{ url_for('static', filename='img/logo.png') }}" alt="RRHS Debate logo">
+        <div class="brand-name">RRHS <span>Debate</span></div>
+      </a>
+      <button class="sidebar-toggle" onclick="toggleSidebar()" title="Hide menu">«</button>
     </div>
 
     <nav class="nav">
+      <a class="nav-item {{ 'active' if active == 'resources' }}" href="{{ url_for('main.dashboard_resources') }}">Resources</a>
+      <a class="nav-item {{ 'active' if active == 'signup' }}" href="{{ url_for('main.dashboard_signup') }}">Sign up for Competition</a>
+
       <div class="nav-group" id="toolsGroup">
         <button class="nav-group-head" onclick="toggleToolsGroup()">
           <span class="nav-group-title">Debate Tools</span>
@@ -28,11 +43,14 @@
           <a class="nav-item {{ 'active' if active == 'scraper' }}" href="{{ url_for('main.dashboard_scraper') }}">Card Finder</a>
           <a class="nav-item {{ 'active' if active == 'cutter' }}" href="{{ url_for('main.dashboard_cutter') }}">Card Cutter</a>
           <a class="nav-item {{ 'active' if active == 'citation' }}" href="{{ url_for('main.dashboard_citation') }}">Citation Maker</a>
+          <a class="nav-item {{ 'active' if active == 'library' }}" href="{{ url_for('main.dashboard_library') }}">Library</a>
         </div>
       </div>
-      <a class="nav-item nav-standalone {{ 'active' if active == 'signup' }}" href="{{ url_for('main.dashboard_signup') }}">Sign up for Competition</a>
-      <a class="nav-item {{ 'active' if active == 'library' }}" href="{{ url_for('main.dashboard_library') }}">Library</a>
     </nav>
+
+    <div class="sidebar-bottom">
+      <a class="nav-item {{ 'active' if active == 'settings' }}" href="{{ url_for('main.dashboard_settings') }}">Settings</a>
+    </div>
 
     <div class="sidebar-foot">
       <div class="sidebar-user">
@@ -52,12 +70,19 @@
   // Debate Tools group: open by default, remember collapsed state.
   (function () {
     var group = document.getElementById("toolsGroup");
-    if (localStorage.getItem("toolsGroupCollapsed") === "1") group.classList.add("collapsed");
+    if (group && localStorage.getItem("toolsGroupCollapsed") === "1") group.classList.add("collapsed");
+    if (localStorage.getItem("sidebarCollapsed") === "1")
+      document.getElementById("shell").classList.add("sidebar-collapsed");
   })();
   function toggleToolsGroup() {
     var group = document.getElementById("toolsGroup");
     group.classList.toggle("collapsed");
     localStorage.setItem("toolsGroupCollapsed", group.classList.contains("collapsed") ? "1" : "0");
+  }
+  function toggleSidebar() {
+    var shell = document.getElementById("shell");
+    shell.classList.toggle("sidebar-collapsed");
+    localStorage.setItem("sidebarCollapsed", shell.classList.contains("sidebar-collapsed") ? "1" : "0");
   }
 </script>
 {% block scripts %}{% endblock %}

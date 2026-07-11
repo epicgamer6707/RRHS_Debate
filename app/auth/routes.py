@@ -72,8 +72,8 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash("You've been signed out.", "info")
-    return redirect(url_for("auth.login"))
+    # Always land on the home screen, not the sign-in page.
+    return redirect(url_for("main.index"))
 
 
 # ── Forgot / reset password ───────────────────────────────────────────────────

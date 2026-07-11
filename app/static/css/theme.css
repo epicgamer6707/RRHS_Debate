@@ -47,3 +47,32 @@
     --line:    rgba(255, 255, 255, 0.08);
     --line-md: rgba(255, 255, 255, 0.15);
 }
+
+/* ── Light mode (opt-in via data-theme="light") ── */
+:root[data-theme="light"] {
+    --surface-0: #eef0f7;
+    --surface-1: #ffffff;
+    --surface-2: #f1f3f9;
+    --surface-3: #e4e7f0;
+
+    --text-hi:  #1b1d38;
+    --text-mid: #565a7c;
+    --text-lo:  #8b8fac;
+
+    --line:    rgba(20, 22, 50, 0.10);
+    --line-md: rgba(20, 22, 50, 0.16);
+
+    --grad-surface: linear-gradient(160deg, #ffffff 0%, #f3f4fb 100%);
+    --grad-brand:   linear-gradient(120deg, #1b1d38 0%, #2E9CCA 60%, #29648A 100%);
+    --glow-soft:    0 8px 26px rgba(20, 22, 50, 0.10);
+
+    --app-bg:
+        radial-gradient(1100px 620px at 15% -8%, rgba(46, 156, 202, 0.14), transparent 60%),
+        radial-gradient(900px 520px at 100% 0%, rgba(41, 100, 138, 0.10), transparent 55%),
+        #eef0f7;
+}
+/* Hardcoded surfaces that need a light-mode counterpart */
+:root[data-theme="light"] .sidebar {
+    background: linear-gradient(180deg, #ffffff 0%, #f3f4fb 100%);
+    box-shadow: 1px 0 0 rgba(20, 22, 50, 0.05), 8px 0 30px rgba(20, 22, 50, 0.06);
+}

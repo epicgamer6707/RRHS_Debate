@@ -61,4 +61,8 @@ function copyCitation() {
     });
 }
 
-buildCitation();
+(function initSignature() {
+    const saved = localStorage.getItem("rrhsSignature");
+    if (saved) document.getElementById("cSig").value = saved;
+    buildCitation();
+})();

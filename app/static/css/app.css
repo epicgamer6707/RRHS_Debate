@@ -34,6 +34,9 @@ a:hover { text-decoration: underline; }
 .brand-logo { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
 .brand-name { font-size: 19px; font-weight: 800; letter-spacing: -0.4px; color: var(--text-hi); }
 .brand-name span { color: var(--accent); }
+.brand-link { text-decoration: none; }
+.brand-link:hover { text-decoration: none; }
+.landing-welcome { font-size: 14px; color: var(--text-mid); font-weight: 600; margin-right: 4px; }
 
 /* ── centered auth card ── */
 .auth-wrap {

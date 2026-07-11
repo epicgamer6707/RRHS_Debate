@@ -35,7 +35,8 @@
       <div class="cut-field"><label>Publication</label>
         <input id="cPub" class="cut-input" oninput="buildCitation()"></div>
       <div class="cut-field"><label>Signature</label>
-        <input id="cSig" class="cut-input" placeholder="your initials" oninput="buildCitation()"></div>
+        <input id="cSig" class="cut-input" placeholder="your initials" oninput="buildCitation()">
+        <div class="cite-hint">Configure your signature in <a href="{{ url_for('main.dashboard_settings') }}">Settings</a>.</div></div>
     </div>
 
     <div class="cut-field">

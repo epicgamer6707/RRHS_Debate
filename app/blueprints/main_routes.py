@@ -13,9 +13,7 @@ bp = Blueprint("main", __name__)
 
 @bp.route("/")
 def index():
-    # Signed-in users skip the marketing page and go straight to their dashboard.
-    if current_user.is_authenticated:
-        return redirect(url_for("main.dashboard"))
+    # Home screen for everyone. Logged-in users see Welcome + Sign out (top right).
     return render_template("landing.html")
 
 
@@ -24,6 +22,18 @@ def index():
 def dashboard():
     # Default landing tool inside the dashboard.
     return redirect(url_for("main.dashboard_scraper"))
+
+
+@bp.route("/dashboard/resources")
+@login_required
+def dashboard_resources():
+    return render_template("dashboard/resources.html", active="resources")
+
+
+@bp.route("/dashboard/settings")
+@login_required
+def dashboard_settings():
+    return render_template("dashboard/settings.html", active="settings")
 
 
 @bp.route("/dashboard/scraper")
