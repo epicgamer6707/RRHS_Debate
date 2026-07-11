@@ -63,14 +63,48 @@ class SavedCard(db.Model):
         return f"<SavedCard {self.title[:40]!r}>"
 
 
-class ClassroomAuth(db.Model):
-    """Single-row store for the officer's Google Classroom offline access.
-
-    One row: whoever connected last provides the class feed for everyone.
-    """
-    __tablename__ = "classroom_auth"
+# ── Native Classroom: Classwork (topics + posted work) ─────────────────────────
+class Topic(db.Model):
+    """A section, e.g. 'Case Construction', 'Public Forum'."""
+    __tablename__ = "topics"
 
     id = db.Column(db.Integer, primary_key=True)
-    refresh_token = db.Column(db.Text, nullable=False)
-    email = db.Column(db.String(255), default="")
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    name = db.Column(db.String(160), nullable=False)
+    position = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    posts = db.relationship(
+        "ClassworkPost", backref="topic", lazy=True, order_by="ClassworkPost.created_at.desc()"
+    )
+
+
+class ClassworkPost(db.Model):
+    __tablename__ = "classwork_posts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    topic_id = db.Column(db.Integer, db.ForeignKey("topics.id"), nullable=True, index=True)
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    title = db.Column(db.String(255), nullable=False, default="")
+    body = db.Column(db.Text, nullable=False, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    author = db.relationship("User")
+    attachments = db.relationship(
+        "Attachment", backref="post", lazy=True, cascade="all, delete-orphan"
+    )
+
+
+class Attachment(db.Model):
+    """Either an uploaded file (kind='file', downloadable via Supabase Storage)
+    or a plain link (kind='link', opened directly)."""
+    __tablename__ = "attachments"
+
+    id = db.Column(db.Integer, primary_key=True)
+    classwork_post_id = db.Column(db.Integer, db.ForeignKey("classwork_posts.id"), nullable=False, index=True)
+    kind = db.Column(db.String(20), nullable=False, default="file")
+    title = db.Column(db.String(255), nullable=False, default="")
+    url = db.Column(db.String(600), default="")           # kind == "link"
+    storage_key = db.Column(db.String(300), default="")   # kind == "file"
+    content_type = db.Column(db.String(160), default="")
+    size = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

@@ -24,16 +24,10 @@ def dashboard():
     return redirect(url_for("main.dashboard_scraper"))
 
 
-@bp.route("/dashboard/resources")
+@bp.route("/dashboard/classroom")
 @login_required
-def dashboard_resources():
-    from ..google_classroom import is_connected, connected_email
-    return render_template(
-        "dashboard/resources.html",
-        active="resources",
-        connected=is_connected(),
-        connected_email=connected_email(),
-    )
+def dashboard_classroom():
+    return render_template("dashboard/classroom.html", active="classroom")
 
 
 @bp.route("/dashboard/settings")

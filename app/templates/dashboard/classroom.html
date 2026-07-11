@@ -1,0 +1,67 @@
+{% extends "dashboard/layout.html" %}
+{% block title %}Classroom{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/classroom.css') }}">
+{% endblock %}
+
+{% block tool %}
+<div class="cr-wrap">
+  <div class="cr-inner">
+    <h1 class="cr-h1">Classroom</h1>
+
+    {% if is_officer %}
+    <div class="cr-compose">
+      <button class="cr-btn" id="crAddBtn" onclick="crToggleForm()">Post work</button>
+
+      <div id="crForm" class="cr-form" hidden>
+        <div class="cr-field">
+          <label>Title</label>
+          <input id="crTitle" class="cr-input" placeholder="e.g. Round Format and Speech Timings">
+        </div>
+
+        <div class="cr-field">
+          <label>Section</label>
+          <select id="crTopicSel" class="cr-input" onchange="crTopicChange()">
+            <option value="">General</option>
+            <option value="__new__">+ New section…</option>
+          </select>
+          <input id="crNewTopic" class="cr-input" placeholder="New section name" hidden style="margin-top:8px;">
+        </div>
+
+        <div class="cr-field">
+          <label>Description <span class="cr-dim">(optional)</span></label>
+          <textarea id="crBody" class="cr-textarea" placeholder="Any notes…"></textarea>
+        </div>
+
+        <div class="cr-field">
+          <label>Links</label>
+          <div id="crLinks"></div>
+          <button class="cr-textbtn" onclick="crAddLinkRow()">+ Add a link</button>
+        </div>
+
+        <div class="cr-field">
+          <label>Files</label>
+          <input id="crFiles" type="file" multiple>
+          {% if not storage_enabled %}
+          <div class="cr-warn">File storage isn't configured yet — links still work.</div>
+          {% endif %}
+        </div>
+
+        <div class="cr-compose-row">
+          <button class="cr-btn" onclick="crSubmit()">Post</button>
+          <button class="cr-textbtn" onclick="crToggleForm()">Cancel</button>
+        </div>
+        <div id="crErr" class="cr-err" hidden></div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div id="crFeed" class="cr-feed"><div class="cr-loading">Loading…</div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>window.CR_CAN_POST = {{ 'true' if is_officer else 'false' }};</script>
+<script src="{{ url_for('static', filename='js/classroom.js') }}"></script>
+{% endblock %}

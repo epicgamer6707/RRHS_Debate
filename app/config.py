@@ -40,12 +40,16 @@ class Config:
     SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
     SLACK_ENABLED = bool(SLACK_WEBHOOK_URL)
 
-    # Google Classroom (Resources feed). Course id decoded from the classroom URL.
-    CLASSROOM_COURSE_ID = os.environ.get("CLASSROOM_COURSE_ID", "870547864979").strip()
-    CLASSROOM_SCOPES = [
-        "openid", "email",
-        "https://www.googleapis.com/auth/classroom.courses.readonly",
-        "https://www.googleapis.com/auth/classroom.announcements.readonly",
-        "https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly",
-        "https://www.googleapis.com/auth/classroom.topics.readonly",
+    # Officers (comma-separated emails) may post to the Classroom. If unset,
+    # everyone can post — set this in Railway to lock posting to officers.
+    OFFICER_EMAILS = [
+        e.strip().lower() for e in os.environ.get("OFFICER_EMAILS", "").split(",") if e.strip()
     ]
+
+    # Supabase Storage for Classwork documents. Uses the service_role key (never
+    # exposed to the browser) so the bucket can stay private; downloads go out
+    # through short-lived signed URLs generated per request.
+    SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
+    SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "").strip()
+    SUPABASE_BUCKET = os.environ.get("SUPABASE_BUCKET", "classroom-files").strip()
+    STORAGE_ENABLED = bool(SUPABASE_URL and SUPABASE_SERVICE_KEY)
