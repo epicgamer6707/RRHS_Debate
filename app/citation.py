@@ -1,4 +1,4 @@
-"""Shared citation formatting.
+"""Shared citation formatting..
 
 Format:
   %last% %y%, %quals%, "%title%," %publication%, %url%, accessed %accessed% | [signature]
