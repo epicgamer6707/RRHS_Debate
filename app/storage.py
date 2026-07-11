@@ -4,12 +4,20 @@ Uses the REST API directly (no SDK dependency). The bucket stays private; the
 service_role key (server-side only, never sent to the browser) uploads files
 and mints short-lived signed URLs for downloads.
 """
+from urllib.parse import quote
+
 import requests
 from flask import current_app
 
 
 def _base():
     return f"{current_app.config['SUPABASE_URL']}/storage/v1"
+
+
+def _enc(key):
+    # Encode each path segment (keeps the "/" between post-id and filename)
+    # so spaces/special chars in uploaded filenames don't break the URL.
+    return "/".join(quote(part, safe="") for part in key.split("/"))
 
 
 def _headers(extra=None):
@@ -21,7 +29,7 @@ def _headers(extra=None):
 
 def upload(key, data, content_type):
     bucket = current_app.config["SUPABASE_BUCKET"]
-    url = f"{_base()}/object/{bucket}/{key}"
+    url = f"{_base()}/object/{bucket}/{_enc(key)}"
     headers = _headers({
         "Content-Type": content_type or "application/octet-stream",
         "x-upsert": "true",
@@ -34,7 +42,7 @@ def upload(key, data, content_type):
 
 def signed_url(key, expires_in=300):
     bucket = current_app.config["SUPABASE_BUCKET"]
-    url = f"{_base()}/object/sign/{bucket}/{key}"
+    url = f"{_base()}/object/sign/{bucket}/{_enc(key)}"
     resp = requests.post(url, headers=_headers(), json={"expiresIn": expires_in}, timeout=15)
     if resp.status_code >= 400:
         current_app.logger.error("[storage] sign failed %s: %s", resp.status_code, resp.text[:300])
