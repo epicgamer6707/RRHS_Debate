@@ -39,3 +39,13 @@ class Config:
     # Slack — incoming webhook for the officers' channel (competition signups).
     SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
     SLACK_ENABLED = bool(SLACK_WEBHOOK_URL)
+
+    # Google Classroom (Resources feed). Course id decoded from the classroom URL.
+    CLASSROOM_COURSE_ID = os.environ.get("CLASSROOM_COURSE_ID", "870547864979").strip()
+    CLASSROOM_SCOPES = [
+        "openid", "email",
+        "https://www.googleapis.com/auth/classroom.courses.readonly",
+        "https://www.googleapis.com/auth/classroom.announcements.readonly",
+        "https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly",
+        "https://www.googleapis.com/auth/classroom.topics.readonly",
+    ]

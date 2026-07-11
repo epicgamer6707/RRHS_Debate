@@ -41,6 +41,18 @@ def create_app(config_object=Config):
             server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
             client_kwargs={"scope": "openid email profile"},
         )
+        # Separate offline client for the Google Classroom Resources feed.
+        oauth.register(
+            name="gclass",
+            client_id=app.config["GOOGLE_CLIENT_ID"],
+            client_secret=app.config["GOOGLE_CLIENT_SECRET"],
+            server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+            client_kwargs={
+                "scope": " ".join(app.config["CLASSROOM_SCOPES"]),
+                "access_type": "offline",
+                "prompt": "consent",
+            },
+        )
 
     # Make the Google flag available to every template.
     @app.context_processor
@@ -54,6 +66,7 @@ def create_app(config_object=Config):
     from .blueprints.competition_routes import bp as competition_bp
     from .blueprints.cutter_routes import bp as cutter_bp
     from .blueprints.citation_routes import bp as citation_bp
+    from .blueprints.resources_routes import bp as resources_bp
     from .auth.routes import bp as auth_bp
     app.register_blueprint(scraper_bp)
     app.register_blueprint(main_bp)
@@ -61,6 +74,7 @@ def create_app(config_object=Config):
     app.register_blueprint(competition_bp)
     app.register_blueprint(cutter_bp)
     app.register_blueprint(citation_bp)
+    app.register_blueprint(resources_bp)
     app.register_blueprint(auth_bp)
 
     # Create tables on first boot (fine for now; we'll switch to migrations later).

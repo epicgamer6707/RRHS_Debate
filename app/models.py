@@ -61,3 +61,16 @@ class SavedCard(db.Model):
 
     def __repr__(self):
         return f"<SavedCard {self.title[:40]!r}>"
+
+
+class ClassroomAuth(db.Model):
+    """Single-row store for the officer's Google Classroom offline access.
+
+    One row: whoever connected last provides the class feed for everyone.
+    """
+    __tablename__ = "classroom_auth"
+
+    id = db.Column(db.Integer, primary_key=True)
+    refresh_token = db.Column(db.Text, nullable=False)
+    email = db.Column(db.String(255), default="")
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

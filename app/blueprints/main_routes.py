@@ -27,7 +27,13 @@ def dashboard():
 @bp.route("/dashboard/resources")
 @login_required
 def dashboard_resources():
-    return render_template("dashboard/resources.html", active="resources")
+    from ..google_classroom import is_connected, connected_email
+    return render_template(
+        "dashboard/resources.html",
+        active="resources",
+        connected=is_connected(),
+        connected_email=connected_email(),
+    )
 
 
 @bp.route("/dashboard/settings")

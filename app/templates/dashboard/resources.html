@@ -1,8 +1,45 @@
 {% extends "dashboard/layout.html" %}
 {% block title %}Resources{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/resources.css') }}">
+{% endblock %}
+
 {% block tool %}
-<div class="tool-empty">
-  <h2>Resources</h2>
-  <p>Coming soon.</p>
+<div class="res-wrap">
+  <div class="res-inner">
+    <div class="res-head">
+      <h1 class="res-h1">Resources</h1>
+      {% if connected %}
+      <div class="res-meta">
+        <span class="res-conn">Live from Google Classroom{% if connected_email %} · {{ connected_email }}{% endif %}</span>
+        <button class="res-textbtn" onclick="refreshNow()">Refresh</button>
+        <button class="res-textbtn" onclick="disconnectClassroom()">Disconnect</button>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if not connected %}
+    <div class="res-connect">
+      <h2>Connect Google Classroom</h2>
+      <p>
+        An officer (a teacher of the class) connects once, and everyone here can
+        browse the class stream, materials, and documents, updated automatically.
+        Everyone else just views, only an officer needs to connect.
+      </p>
+      <a class="res-btn" href="{{ url_for('resources.connect') }}">Connect Google Classroom</a>
+      {% if request.args.get('error') == 'offline' %}
+      <div class="res-err">Google didn't grant offline access. Click Connect again and be sure to press <strong>Allow</strong>.</div>
+      {% elif request.args.get('error') == 'failed' %}
+      <div class="res-err">Connection failed. Please try again.</div>
+      {% endif %}
+    </div>
+    {% else %}
+    <div id="resFeed" class="res-feed"><div class="res-loading">Loading class posts…</div></div>
+    {% endif %}
+  </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{% if connected %}<script src="{{ url_for('static', filename='js/resources.js') }}"></script>{% endif %}
 {% endblock %}
