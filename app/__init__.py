@@ -42,16 +42,14 @@ def create_app(config_object=Config):
             client_kwargs={"scope": "openid email profile"},
         )
         # Separate offline client for the Google Classroom Resources feed.
+        # (access_type/prompt are passed on authorize_redirect, not here, so they
+        # actually reach Google's authorization URL and yield a refresh token.)
         oauth.register(
             name="gclass",
             client_id=app.config["GOOGLE_CLIENT_ID"],
             client_secret=app.config["GOOGLE_CLIENT_SECRET"],
             server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-            client_kwargs={
-                "scope": " ".join(app.config["CLASSROOM_SCOPES"]),
-                "access_type": "offline",
-                "prompt": "consent",
-            },
+            client_kwargs={"scope": " ".join(app.config["CLASSROOM_SCOPES"])},
         )
 
     # Make the Google flag available to every template.

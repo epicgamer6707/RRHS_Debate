@@ -14,7 +14,10 @@ def connect():
     if not current_app.config.get("GOOGLE_ENABLED"):
         return redirect(url_for("main.dashboard_resources"))
     redirect_uri = url_for("resources.connect_callback", _external=True)
-    return oauth.gclass.authorize_redirect(redirect_uri)
+    # access_type=offline + prompt=consent -> Google returns a refresh token.
+    return oauth.gclass.authorize_redirect(
+        redirect_uri, access_type="offline", prompt="consent", include_granted_scopes="true"
+    )
 
 
 @bp.route("/connect/callback")
