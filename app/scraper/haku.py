@@ -1,8 +1,16 @@
-"""Haku.cards Playwright scraper.
+"""Haku.cards Playwright scraper + general-purpose URL fetcher.
 
-A single persistent Playwright thread processes scrape tasks off a queue so the
-browser is launched once and reused across requests. Results are streamed back
-through a per-request queue.
+Two independent Playwright workers, each with its own thread and browser:
+  * scrape worker — searches haku.cards for the Card Finder tool. Reuses one
+    page across jobs (always the same site, so this is safe and fast).
+  * fetch worker — loads arbitrary user-submitted URLs (Card Cutter, Citation
+    Maker). Each job gets a brand-new, isolated browser context that is always
+    closed afterward.
+
+Keeping these separate matters: a slow or heavy link pasted into the Card
+Cutter can never back up or crash the Card Finder, and a fetch job's memory is
+always released when its context closes instead of accumulating in one
+long-lived page.
 """
 from playwright.sync_api import sync_playwright
 from urllib.parse import quote_plus
@@ -10,8 +18,10 @@ import threading
 import queue as q_mod
 import atexit
 
-_task_queue = q_mod.Queue()
-_pw_thread = None
+_UA = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36"
+)
 
 CLIPBOARD_JS = """
 async () => {
@@ -30,9 +40,26 @@ async () => {
 """
 
 
+def _drain(q, msg):
+    """Flush a queue on worker crash, telling every waiting request why."""
+    while True:
+        try:
+            job = q.get_nowait()
+            if job is None:
+                break
+            job["out_q"].put(("err", msg))
+        except Exception:
+            break
+
+
+# ── Card Finder (search haku.cards) ─────────────────────────────────────────
+_scrape_queue = q_mod.Queue()
+_scrape_thread = None
+
+
 def _scrape(page, query, year, event, out_q):
     url = "https://haku.cards/search?q=" + quote_plus(query)
-    page.goto(url, wait_until="networkidle")
+    page.goto(url, wait_until="networkidle", timeout=20000)
 
     # ── year filter ───────────────────────────────────────────────────────────
     if year != "all":
@@ -122,26 +149,9 @@ def _scrape(page, query, year, event, out_q):
     out_q.put(("done", count))
 
 
-_UA = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36"
-)
-
-
-def _fetch_html(page, url, out_q):
-    """Load an arbitrary URL in the real browser and return its rendered HTML."""
+def _scrape_worker():
     try:
-        page.goto(url, wait_until="domcontentloaded", timeout=25000)
-        page.wait_for_timeout(600)
-        html = page.content()
-        out_q.put(("html", html))
-    except Exception as e:
-        out_q.put(("err", str(e)))
-
-
-def _pw_worker():
-    try:
-        print("[pw] starting playwright...", flush=True)
+        print("[pw] scrape worker starting...", flush=True)
         with sync_playwright() as pw:
             browser = pw.chromium.launch(headless=True)
             ctx = browser.new_context(
@@ -149,58 +159,124 @@ def _pw_worker():
                 user_agent=_UA,
             )
             page = ctx.new_page()
-            print("[pw] ready.", flush=True)
+            print("[pw] scrape worker ready.", flush=True)
             while True:
-                job = _task_queue.get()
+                job = _scrape_queue.get()
                 if job is None:
                     break
                 out_q = job["out_q"]
                 try:
-                    if job["kind"] == "scrape":
-                        _scrape(page, job["query"], job["year"], job["event"], out_q)
-                    elif job["kind"] == "fetch":
-                        _fetch_html(page, job["url"], out_q)
+                    _scrape(page, job["query"], job["year"], job["event"], out_q)
                 except Exception as e:
-                    print(f"[pw] job error: {e}", flush=True)
+                    print(f"[pw] scrape job error: {e}", flush=True)
                     out_q.put(("err", str(e)))
     except Exception as e:
-        print(f"[pw] WORKER CRASHED: {e}", flush=True)
-        while True:
-            try:
-                job = _task_queue.get_nowait()
-                if job is None:
-                    break
-                job["out_q"].put(("err", f"Playwright worker crashed: {e}"))
-            except Exception:
-                break
+        print(f"[pw] SCRAPE WORKER CRASHED: {e}", flush=True)
+        _drain(_scrape_queue, f"Search worker crashed: {e}")
 
 
-def ensure_pw_thread():
-    global _pw_thread
-    if _pw_thread is None or not _pw_thread.is_alive():
-        _pw_thread = threading.Thread(target=_pw_worker, daemon=True)
-        _pw_thread.start()
+def _ensure_scrape_thread():
+    global _scrape_thread
+    if _scrape_thread is None or not _scrape_thread.is_alive():
+        _scrape_thread = threading.Thread(target=_scrape_worker, daemon=True)
+        _scrape_thread.start()
 
 
 def submit_scrape(query, year, event):
     """Queue a scrape job and return the per-request output queue."""
-    ensure_pw_thread()
+    _ensure_scrape_thread()
     out_q = q_mod.Queue()
-    _task_queue.put({"kind": "scrape", "query": query, "year": year, "event": event, "out_q": out_q})
+    _scrape_queue.put({"query": query, "year": year, "event": event, "out_q": out_q})
     return out_q
 
 
+# ── general URL fetch (Card Cutter / Citation Maker) ────────────────────────
+# Every job gets its own fresh context, closed right after — memory can never
+# accumulate here, and a slow/heavy page can't block anything else.
+_FETCH_TIMEOUT_MS = 20000
+_FETCH_MAX_PENDING = 6  # reject new jobs past this backlog instead of piling up
+
+_fetch_queue = q_mod.Queue()
+_fetch_thread = None
+_fetch_pending = 0
+_fetch_lock = threading.Lock()
+
+
+def _fetch_html(browser, url, out_q):
+    ctx = None
+    try:
+        ctx = browser.new_context(user_agent=_UA)
+        ctx.set_default_timeout(_FETCH_TIMEOUT_MS)
+        page = ctx.new_page()
+        page.goto(url, wait_until="domcontentloaded", timeout=_FETCH_TIMEOUT_MS)
+        page.wait_for_timeout(500)
+        out_q.put(("html", page.content()))
+    except Exception as e:
+        out_q.put(("err", str(e)))
+    finally:
+        if ctx is not None:
+            try:
+                ctx.close()
+            except Exception:
+                pass
+
+
+def _fetch_worker():
+    global _fetch_pending
+    try:
+        print("[pw] fetch worker starting...", flush=True)
+        with sync_playwright() as pw:
+            browser = pw.chromium.launch(headless=True)
+            print("[pw] fetch worker ready.", flush=True)
+            while True:
+                job = _fetch_queue.get()
+                if job is None:
+                    break
+                try:
+                    _fetch_html(browser, job["url"], job["out_q"])
+                except Exception as e:
+                    print(f"[pw] fetch job error: {e}", flush=True)
+                    job["out_q"].put(("err", str(e)))
+                finally:
+                    with _fetch_lock:
+                        _fetch_pending = max(0, _fetch_pending - 1)
+    except Exception as e:
+        print(f"[pw] FETCH WORKER CRASHED: {e}", flush=True)
+        _drain(_fetch_queue, f"Fetch worker crashed: {e}")
+
+
+def _ensure_fetch_thread():
+    global _fetch_thread
+    if _fetch_thread is None or not _fetch_thread.is_alive():
+        _fetch_thread = threading.Thread(target=_fetch_worker, daemon=True)
+        _fetch_thread.start()
+
+
 def submit_fetch(url):
-    """Queue a URL fetch (real browser) and return the per-request output queue."""
-    ensure_pw_thread()
+    """Queue a URL fetch; returns the output queue, or None if overloaded."""
+    global _fetch_pending
+    _ensure_fetch_thread()
+    with _fetch_lock:
+        if _fetch_pending >= _FETCH_MAX_PENDING:
+            return None
+        _fetch_pending += 1
     out_q = q_mod.Queue()
-    _task_queue.put({"kind": "fetch", "url": url, "out_q": out_q})
+    _fetch_queue.put({"url": url, "out_q": out_q})
     return out_q
 
 
 def worker_status():
-    alive = _pw_thread is not None and _pw_thread.is_alive()
-    return {"thread_alive": alive, "queue_size": _task_queue.qsize()}
+    return {
+        "scrape_alive": _scrape_thread is not None and _scrape_thread.is_alive(),
+        "fetch_alive": _fetch_thread is not None and _fetch_thread.is_alive(),
+        "scrape_queue": _scrape_queue.qsize(),
+        "fetch_queue": _fetch_queue.qsize(),
+    }
 
 
-atexit.register(lambda: _task_queue.put(None))
+def ensure_pw_thread():
+    """Eagerly start the scrape worker (kept for existing call sites)."""
+    _ensure_scrape_thread()
+
+
+atexit.register(lambda: (_scrape_queue.put(None), _fetch_queue.put(None)))

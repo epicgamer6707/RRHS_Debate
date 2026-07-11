@@ -31,16 +31,17 @@ _STOP = {
 def _fetch_html(url):
     """Fetch rendered HTML via the real browser (handles JS + bot-blocked sites).
 
-    Falls back to trafilatura's plain fetch if the browser is unavailable.
+    Falls back to trafilatura's plain fetch if the browser is busy/unavailable.
     """
-    try:
-        out_q = submit_fetch(url)
-        kind, payload = out_q.get(timeout=45)
-        if kind == "html" and payload:
-            return payload
-    except (_q.Empty, Exception):
-        pass
-    return trafilatura.fetch_url(url)  # fallback
+    out_q = submit_fetch(url)
+    if out_q is not None:
+        try:
+            kind, payload = out_q.get(timeout=45)
+            if kind == "html" and payload:
+                return payload
+        except _q.Empty:
+            pass
+    return trafilatura.fetch_url(url)  # fallback (also used when the fetch worker is at capacity)
 
 
 def extract_from_url(url):

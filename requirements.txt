@@ -10,3 +10,4 @@ trafilatura
 pypdf
 python-docx
 psycopg2-binary
+gunicorn
