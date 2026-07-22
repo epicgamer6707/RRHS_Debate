@@ -177,3 +177,6 @@
 }
 .tab-whois-name { font-size: 15px; font-weight: 700; color: var(--text-hi); }
 .tab-whois-school { font-size: 13px; color: var(--text-mid); margin-top: 2px; }
+
+/* off-screen decoy inputs that catch browser autofill */
+.autofill-decoy { position: absolute; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; z-index: -1; }

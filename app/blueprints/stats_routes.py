@@ -84,6 +84,22 @@ def import_tabroom():
     return jsonify(result), (200 if result.get("ok") else 400)
 
 
+def _apply_tournaments(rec, tournaments):
+    """Replace this record's tournaments with the ones synced from Tabroom and
+    recompute season totals. (Manual entry is gone, so a clean rebuild is safe.)"""
+    TournamentResult.query.filter_by(record_id=rec.id).delete()
+    rec.wins = rec.losses = 0
+    for t in tournaments:
+        w, l = _int(t.get("wins")), _int(t.get("losses"))
+        db.session.add(TournamentResult(
+            record_id=rec.id, name=(t.get("name") or "Tournament")[:255],
+            date_str=(t.get("date") or "")[:80], wins=w, losses=l,
+            place=(t.get("division") or "")[:80],
+        ))
+        rec.wins += w
+        rec.losses += l
+
+
 def _apply_scrape(rec, url, result):
     """Persist a scraped Tabroom result: remember the link, and fold the
     tournament into the record without double-counting on re-refresh (dedup by
@@ -143,10 +159,7 @@ def refresh_tabroom():
             db.session.commit()
             return jsonify({"ok": False, "error": link.last_error, "reconnect": True}), 400
         rec = _record_for(current_user, create=True)
-        _apply_scrape(rec, rec.tabroom_url or "", {
-            "name": (link.person_name or "Tabroom") + " — season", "ok": True,
-            "wins": result.get("wins", 0), "losses": result.get("losses", 0), "place": "",
-        })
+        _apply_tournaments(rec, result.get("tournaments", []))
         db.session.commit()
         return jsonify({"ok": True, "wins": rec.wins, "losses": rec.losses})
 
@@ -205,9 +218,6 @@ def tabroom_confirm():
     result, err = fetch_results(cookies_from_json(link.session_json))
     if not err and result and result.get("authed"):
         rec = _record_for(current_user, create=True)
-        _apply_scrape(rec, rec.tabroom_url or "", {
-            "name": (link.person_name or "Tabroom") + " — season", "ok": True,
-            "wins": result.get("wins", 0), "losses": result.get("losses", 0), "place": "",
-        })
+        _apply_tournaments(rec, result.get("tournaments", []))
     db.session.commit()
     return jsonify({"ok": True, "linked": True})

@@ -8,6 +8,7 @@ never stored and never leaves this function.
 """
 import json
 import re
+from urllib.parse import urljoin
 
 import requests
 from passlib.hash import sha512_crypt
@@ -102,9 +103,67 @@ def _fetch_identity(s):
     return {"name": name, "school": school}
 
 
+_ROUND_START = re.compile(
+    r"^(Round\s*\d+|R\d+|Octo|Double|Triple|Quarter|Semi|Final|Bergen|"
+    r"Round of|Elim|Prelim|Partial|Playoff|Runoff)", re.I)
+_LETTER = re.compile(r"(?<![A-Za-z])([WL])(?![A-Za-z])")
+_DATE = re.compile(r"\d{1,2}\s+[A-Za-z]{3,9}\.?\s+\d{4}")
+_DIVISION = re.compile(
+    r"Lincoln-Douglas|Policy|Public Forum|Congress|Parli|World|Extemp|"
+    r"Oratory|Interp|Debate|Speech|\bLD\b|\bPF\b|\bCX\b|\bBQ\b", re.I)
+
+
+def _rows(html):
+    for tr in re.findall(r"<tr[^>]*>(.*?)</tr>", html, re.S | re.I):
+        cells = re.findall(r"<t[dh][^>]*>(.*?)</t[dh]>", tr, re.S | re.I)
+        yield tr, [_text(c) for c in cells]
+
+
+def _parse_index(html):
+    """Tournaments from the 'History at …' table: name, date, division, detail link."""
+    i = html.find("History at")
+    region = html[i:] if i != -1 else html
+    out = []
+    for tr, cells in _rows(region):
+        if not cells:
+            continue
+        date = next((c for c in cells if _DATE.match(c)), "")
+        if not date:
+            continue  # header or non-tournament row
+        name = cells[0][:255]
+        division = next((c for c in cells if _DIVISION.search(c)), "")[:120]
+        m = re.search(r'href\s*=\s*"([^"]+)"', tr)
+        out.append({"name": name, "date": date[:80], "division": division,
+                    "link": m.group(1) if m else "", "wins": 0, "losses": 0})
+    return out
+
+
+def _count_wl(html):
+    """Count round wins/losses on an entry-record page. Groups panel ballots per
+    round (a round row followed by extra judge rows) and takes the majority."""
+    rounds = []
+    for _tr, cells in _rows(html):
+        if not cells:
+            continue
+        first = cells[0]
+        letters = _LETTER.findall(" ".join(cells[1:]))  # skip the round-label cell
+        if _ROUND_START.match(first):
+            rounds.append(list(letters))
+        elif rounds and letters and not first:
+            rounds[-1].extend(letters)  # continuation row (more judges on a panel)
+    wins = losses = 0
+    for rl in rounds:
+        w, l = rl.count("W"), rl.count("L")
+        if w > l:
+            wins += 1
+        elif l > w:
+            losses += 1
+    return wins, losses
+
+
 def fetch_results(cookies_dict):
     """Read the signed-in user's results. Returns (result, error) where result is
-    {"wins", "losses", "authed"}. If the session is dead, authed=False."""
+    {"authed", "wins", "losses", "tournaments": [...]}. authed=False if session died."""
     s = _session_from(cookies_dict)
     try:
         r = s.get(_STUDENT, timeout=30, allow_redirects=True)
@@ -113,20 +172,19 @@ def fetch_results(cookies_dict):
     if "login" in r.url:  # bounced to login → session expired
         return {"authed": False}, None
 
-    text = _text(r.text)
+    tournaments = _parse_index(r.text)
+    for t in tournaments[:15]:
+        if not t["link"]:
+            continue
+        try:
+            detail = s.get(urljoin(_BASE, t["link"]), timeout=25).text
+        except requests.RequestException:
+            continue
+        t["wins"], t["losses"] = _count_wl(detail)
 
-    # Sum explicit per-tournament records like "4-2" / "Prelims 4-2"; guard sanity.
-    pairs = re.findall(r"(?:Prelims?|Record)[:\s]+(\d+)\s*[-–]\s*(\d+)", text)
-    wins = losses = 0
-    if pairs:
-        for w, l in pairs:
-            wins += int(w); losses += int(l)
-    else:
-        wins = len(re.findall(r"\b(?:Win|Won)\b", text))
-        losses = len(re.findall(r"\b(?:Loss|Lost)\b", text))
-    if wins > 200 or losses > 200:
-        wins = losses = 0
-    return {"authed": True, "wins": wins, "losses": losses}, None
+    wins = sum(t["wins"] for t in tournaments)
+    losses = sum(t["losses"] for t in tournaments)
+    return {"authed": True, "wins": wins, "losses": losses, "tournaments": tournaments}, None
 
 
 def cookies_to_json(cookies_dict):
