@@ -17,9 +17,9 @@ body {
 .sidebar {
     width: 232px;
     flex-shrink: 0;
-    background: linear-gradient(180deg, #0c0d11 0%, #08090c 100%);
+    background: var(--surface-1);
     border-right: 1px solid var(--line);
-    box-shadow: 1px 0 0 rgba(47, 109, 255, 0.06), 8px 0 30px rgba(0, 0, 0, 0.4);
+    box-shadow: 8px 0 30px rgba(20, 20, 25, 0.05);
     display: flex;
     flex-direction: column;
 }

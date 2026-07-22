@@ -4,7 +4,7 @@
 <div class="landing">
   <header class="landing-nav">
     <a class="brand brand-link" href="{{ url_for('main.index') }}" style="margin-bottom:0;">
-      <span class="brand-badge">RR</span>
+      <img class="brand-logo" src="{{ url_for('static', filename='img/logo.png') }}" alt="RRHS Debate logo">
       <div class="brand-name">RRHS <span>Debate</span></div>
     </a>
     <div class="landing-nav-actions">
@@ -43,18 +43,20 @@
       </div>
     </div>
 
-    <!-- Photo collage. Drop team photos in app/static/img/collage/1.jpg … 6.jpg
-         to fill the tiles; a dark-blue gradient shows until then. -->
+    <!-- Auto-scrolling photo collage. Drop team photos into
+         app/static/img/collage/ as 1.jpg … 8.jpg to fill the tiles. -->
     <div class="hero-collage">
-      <div class="tile tile-a" style="background-image: linear-gradient(180deg, rgba(8,9,12,.15), rgba(8,9,12,.75)), url('{{ url_for('static', filename='img/collage/1.jpg') }}');">
-        <span class="tile-cap">Districts recap →</span>
+      <div class="collage-col up">
+        {% for n in [1, 2, 3, 4, 1, 2, 3, 4] %}
+        <div class="tile" style="background-image:url('{{ url_for('static', filename='img/collage/' ~ n ~ '.jpg') }}');"></div>
+        {% endfor %}
       </div>
-      <div class="tile tile-b" style="background-image: linear-gradient(180deg, rgba(8,9,12,.15), rgba(8,9,12,.7)), url('{{ url_for('static', filename='img/collage/2.jpg') }}');"></div>
-      <div class="tile tile-c" style="background-image: linear-gradient(180deg, rgba(8,9,12,.15), rgba(8,9,12,.7)), url('{{ url_for('static', filename='img/collage/3.jpg') }}');"></div>
-      <div class="tile tile-d" style="background-image: linear-gradient(180deg, rgba(8,9,12,.15), rgba(8,9,12,.75)), url('{{ url_for('static', filename='img/collage/4.jpg') }}');">
-        <span class="tile-cap">Cedar Ridge recap →</span>
+      <div class="collage-col down">
+        {% for n in [5, 6, 7, 8, 5, 6, 7, 8] %}
+        <div class="tile" style="background-image:url('{{ url_for('static', filename='img/collage/' ~ n ~ '.jpg') }}');"></div>
+        {% endfor %}
       </div>
-      <div class="tile tile-e" style="background-image: linear-gradient(180deg, rgba(8,9,12,.15), rgba(8,9,12,.7)), url('{{ url_for('static', filename='img/collage/5.jpg') }}');"></div>
+      <div class="collage-fade"></div>
     </div>
   </main>
 </div>

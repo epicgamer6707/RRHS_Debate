@@ -3,40 +3,40 @@
    Bold editorial look: near-black surfaces, electric-blue accent, heavy condensed
    display type. Loaded on every page so scraper, login, dashboard all share it.
    ───────────────────────────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-    /* Display + body fonts */
-    --font-display: "Anton", "Arial Narrow", "Helvetica Neue", sans-serif;
+    /* Display + body fonts — Archivo Black is heavy but open (not condensed) */
+    --font-display: "Archivo Black", "Arial Black", "Helvetica Neue", sans-serif;
     --font-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
 
     /* Raw brand palette */
-    --c-blue:  #2f6dff;
+    --c-maroon: #8a1e2e;
 
     /* Dark-UI surfaces (near-black) */
-    --surface-0: #08090c;   /* deepest background          */
-    --surface-1: #101216;   /* panels / bars               */
-    --surface-2: #17191f;   /* raised cards / inputs        */
-    --surface-3: #24272f;   /* hover / higher lift          */
+    --surface-0: #0c0c0e;   /* page background          */
+    --surface-1: #151519;   /* panels / bars            */
+    --surface-2: #1c1d22;   /* raised cards / inputs     */
+    --surface-3: #292a30;   /* hover / higher lift       */
 
     /* Text on dark surfaces */
-    --text-hi:  #f5f6f8;    /* primary   */
-    --text-mid: #9aa0ac;    /* secondary */
-    --text-lo:  #656b76;    /* muted     */
+    --text-hi:  #f4f4f6;    /* primary   */
+    --text-mid: #a4a8b0;    /* secondary */
+    --text-lo:  #6e727c;    /* muted     */
 
-    /* Accents — electric blue */
-    --accent:        #2f6dff;
-    --accent-2:      #1c50e0; /* hover / secondary          */
-    --accent-bright: #5b8cff; /* brighter blue for glows    */
-    --accent-soft:   rgba(47, 109, 255, 0.16);
+    /* Accents — RRHS maroon */
+    --accent:        #b3283c;
+    --accent-2:      #8a1e2e; /* hover / secondary        */
+    --accent-bright: #d24357; /* brighter maroon for glows */
+    --accent-soft:   rgba(179, 40, 60, 0.16);
 
-    /* Gradients + glows for pop */
-    --grad-accent:       linear-gradient(135deg, #4f83ff 0%, #2f6dff 55%, #1c50e0 100%);
-    --grad-accent-hover: linear-gradient(135deg, #6a97ff 0%, #3d78ff 55%, #2358f0 100%);
-    --grad-surface:      linear-gradient(160deg, #16181e 0%, #0e1014 100%);
-    --grad-brand:        linear-gradient(120deg, #f5f6f8 0%, #7ea3ff 55%, #2f6dff 100%);
-    --glow-accent:       0 6px 22px rgba(47, 109, 255, 0.40);
-    --glow-accent-lg:    0 10px 34px rgba(47, 109, 255, 0.48);
+    /* Gradients + glows */
+    --grad-accent:       linear-gradient(135deg, #c73347 0%, #a5253a 58%, #7f1c2b 100%);
+    --grad-accent-hover: linear-gradient(135deg, #d64255 0%, #b32d42 58%, #8f2231 100%);
+    --grad-surface:      linear-gradient(160deg, #1a1a1f 0%, #121216 100%);
+    --grad-brand:        linear-gradient(120deg, #f4f4f6 0%, #d24357 100%);
+    --glow-accent:       0 6px 22px rgba(179, 40, 60, 0.38);
+    --glow-accent-lg:    0 10px 34px rgba(179, 40, 60, 0.46);
     --glow-soft:         0 8px 30px rgba(0, 0, 0, 0.55);
 
     /* Semantic stat colors (dashboard) */
@@ -49,10 +49,9 @@
     --grad-gold:   linear-gradient(135deg, #ffd873 0%, #eda92f 100%);
     --grad-violet: linear-gradient(135deg, #b3a6ff 0%, #7c6cf0 100%);
 
-    /* App backdrop: near-black with a faint blue glow up top */
+    /* App backdrop: near-black with a whisper of maroon up top-left */
     --app-bg:
-        radial-gradient(1100px 620px at 12% -10%, rgba(47, 109, 255, 0.10), transparent 60%),
-        radial-gradient(900px 520px at 100% 0%, rgba(28, 80, 224, 0.08), transparent 55%),
+        radial-gradient(1100px 620px at 12% -10%, rgba(179, 40, 60, 0.12), transparent 60%),
         var(--surface-0);
 
     /* Hairlines on dark surfaces */
@@ -62,31 +61,35 @@
 
 /* ── Light mode (opt-in via data-theme="light") ── */
 :root[data-theme="light"] {
-    --surface-0: #f3f4f8;
+    --surface-0: #f6f6f7;
     --surface-1: #ffffff;
-    --surface-2: #f1f3f9;
-    --surface-3: #e4e7f0;
+    --surface-2: #f2f3f5;
+    --surface-3: #e9eaee;
 
-    --text-hi:  #0c0d12;
-    --text-mid: #4c5261;
-    --text-lo:  #8b8fac;
+    --text-hi:  #16181d;
+    --text-mid: #565b66;
+    --text-lo:  #8b909b;
 
-    --line:    rgba(12, 13, 18, 0.10);
-    --line-md: rgba(12, 13, 18, 0.16);
+    --accent:        #8a1e2e;
+    --accent-2:      #6a1622;
+    --accent-bright: #b23347;
+    --accent-soft:   rgba(138, 30, 46, 0.10);
+    --grad-accent:   linear-gradient(135deg, #a5293c 0%, #8a1e2e 58%, #6a1622 100%);
 
-    --grad-surface: linear-gradient(160deg, #ffffff 0%, #f3f4fb 100%);
-    --grad-brand:   linear-gradient(120deg, #0c0d12 0%, #2f6dff 60%, #1c50e0 100%);
-    --glow-soft:    0 8px 26px rgba(12, 13, 18, 0.10);
+    --line:    rgba(20, 20, 25, 0.10);
+    --line-md: rgba(20, 20, 25, 0.16);
+
+    --grad-surface: linear-gradient(160deg, #ffffff 0%, #f4f5f7 100%);
+    --grad-brand:   linear-gradient(120deg, #16181d 0%, #8a1e2e 100%);
+    --glow-soft:    0 8px 26px rgba(20, 20, 25, 0.08);
 
     --app-bg:
-        radial-gradient(1100px 620px at 12% -10%, rgba(47, 109, 255, 0.12), transparent 60%),
-        radial-gradient(900px 520px at 100% 0%, rgba(28, 80, 224, 0.08), transparent 55%),
-        #f3f4f8;
+        radial-gradient(1100px 620px at 12% -10%, rgba(138, 30, 46, 0.05), transparent 60%),
+        var(--surface-0);
 }
-/* Hardcoded surfaces that need a light-mode counterpart */
 :root[data-theme="light"] .sidebar {
-    background: linear-gradient(180deg, #ffffff 0%, #f3f4fb 100%);
-    box-shadow: 1px 0 0 rgba(20, 22, 50, 0.05), 8px 0 30px rgba(20, 22, 50, 0.06);
+    background: #ffffff;
+    box-shadow: 8px 0 30px rgba(20, 20, 25, 0.05);
 }
 
 /* ── Editorial display treatment shared across pages ── */
