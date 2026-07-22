@@ -153,8 +153,17 @@ select.cut-input {
 /* bot fills its cell */
 .an-bot-card { display: flex; flex-direction: column; }
 
-/* highlighted source doc */
-.an-doc { background: #eceef4; color: #1b1d38; border-radius: 12px; padding: 18px 20px; line-height: 1.95; font-size: 14px; word-break: break-word; max-height: 520px; overflow-y: auto; }
+/* highlighted source doc + side notes */
+.an-doc-layout { display: grid; grid-template-columns: 1fr 300px; gap: 22px; align-items: start; }
+.an-doc { background: #eceef4; color: #1b1d38; border-radius: 12px; padding: 18px 20px; line-height: 2; font-size: 14px; word-break: break-word; }
+.an-notes { position: relative; align-self: stretch; }
+.an-note-card { position: absolute; left: 0; right: 0; border: 1px solid var(--line); border-left-width: 4px; border-radius: 10px; padding: 10px 12px; background: var(--grad-surface); box-shadow: var(--glow-soft);
+    opacity: 0; transform: translateX(14px); transition: opacity .35s ease, transform .35s ease, box-shadow .12s; }
+.an-note-card.show { opacity: 1; transform: translateX(0); }
+.an-note-card.hot { box-shadow: var(--glow-accent); }
+.an-note-card::before { content: ""; position: absolute; left: -22px; top: 16px; width: 22px; height: 1px; background: var(--line-md); }
+.an-note-role { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--text-hi); }
+.an-note-text { font-size: 13px; color: var(--text-mid); line-height: 1.5; margin-top: 4px; }
 .seg { border-radius: 3px; padding: 1px 3px; color: #1b1d38; position: relative; transition: box-shadow .12s; }
 .seg.flash { box-shadow: 0 0 0 2px var(--accent); }
 .seg-tag { display: inline-block; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #fff; background: rgba(27,29,56,.6); border-radius: 4px; padding: 0 4px; margin-left: 4px; vertical-align: middle; }
@@ -166,6 +175,12 @@ select.cut-input {
 .seg.role-impact, mark.role-impact { background: rgba(255,107,125,.45); }
 .seg.role-uniqueness, mark.role-uniqueness { background: rgba(245,196,81,.55); }
 .seg.role-context, mark.role-context { background: rgba(170,171,184,.4); }
+.an-note-card.role-warrant { border-left-color: #34d39a; }
+.an-note-card.role-interp { border-left-color: #2e9cca; }
+.an-note-card.role-link { border-left-color: #9b8cff; }
+.an-note-card.role-impact { border-left-color: #ff6b7d; }
+.an-note-card.role-uniqueness { border-left-color: #f5c451; }
+.an-note-card.role-context { border-left-color: #aaabb8; }
 
 @media (max-width: 760px) { .an-grid { grid-template-columns: 1fr; } }
 

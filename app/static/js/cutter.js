@@ -156,27 +156,86 @@ function renderChart(counts) {
          </div>`).join("");
 }
 
-// ── highlighted source document ─────────────────────────────────────────────────
+// ── highlighted source document + side notes that reveal on scroll ──────────────
+let anNoteObserver = null;
+
 function renderDoc(segments) {
+    // Wrap each found quote with an indexed <mark>; keep only the ones we can place.
     let html = esc(anLoadedText);
-    segments.forEach((s, i) => {
+    const placed = [];
+    segments.forEach((s) => {
         const q = esc((s.quote || "").trim());
         if (!q) return;
         const idx = html.indexOf(q);
         if (idx === -1) return;
+        const i = placed.length;
         const role = esc(s.role || "context");
-        const note = esc(s.note || "");
         html = html.slice(0, idx) +
-            `<mark class="seg role-${role}" data-role="${role}" title="${role}: ${note}">${q}` +
+            `<mark class="seg role-${role}" data-role="${role}" data-i="${i}">${q}` +
             `<span class="seg-tag">${role}</span></mark>` +
             html.slice(idx + q.length);
+        placed.push({ role, note: s.note || "" });
     });
     document.getElementById("anDoc").innerHTML = html;
+
+    // Build the side notes (one per placed segment).
+    const notesEl = document.getElementById("anNotes");
+    notesEl.innerHTML = placed.map((s, i) =>
+        `<div class="an-note-card role-${esc(s.role)}" data-i="${i}"
+              onmouseenter="flashSeg(${i}, true)" onmouseleave="flashSeg(${i}, false)">
+            <span class="an-note-role">${esc(s.role)}</span>
+            <div class="an-note-text">${esc(s.note)}</div>
+         </div>`).join("");
+
+    placeNotes();
+    observeNotes();
 }
+
+// Position each note next to its highlight, then reveal it once scrolled into view.
+function placeNotes() {
+    const doc = document.getElementById("anDoc");
+    const notesEl = document.getElementById("anNotes");
+    if (!doc || !notesEl) return;
+    const notesTop = notesEl.getBoundingClientRect().top;
+    let lastBottom = -Infinity;
+    notesEl.querySelectorAll(".an-note-card").forEach(card => {
+        const mark = doc.querySelector(`.seg[data-i="${card.dataset.i}"]`);
+        if (!mark) return;
+        let top = mark.getBoundingClientRect().top - notesTop;
+        if (top < lastBottom + 8) top = lastBottom + 8;  // avoid overlap
+        card.style.top = Math.max(0, top) + "px";
+        lastBottom = top + card.offsetHeight;
+    });
+    // grow the column so a tall notes stack doesn't spill past the card
+    notesEl.style.minHeight = lastBottom > 0 ? lastBottom + "px" : "";
+}
+
+function observeNotes() {
+    if (anNoteObserver) anNoteObserver.disconnect();
+    anNoteObserver = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (!e.isIntersecting) return;
+            const i = e.target.dataset.i;
+            const card = document.querySelector(`.an-note-card[data-i="${i}"]`);
+            if (card) card.classList.add("show");
+        });
+    }, { rootMargin: "0px 0px -25% 0px" });
+    document.querySelectorAll("#anDoc .seg").forEach(m => anNoteObserver.observe(m));
+}
+
+// keep notes aligned if the layout reflows
+window.addEventListener("resize", () => { if (!document.getElementById("anResults").hidden) placeNotes(); });
 
 function flashRole(role, on) {
     document.querySelectorAll(`.seg[data-role="${role}"]`).forEach(e => e.classList.toggle("flash", on));
     document.querySelectorAll(`.an-leg-item[data-role="${role}"]`).forEach(e => e.classList.toggle("flash", on));
+}
+
+function flashSeg(i, on) {
+    const m = document.querySelector(`.seg[data-i="${i}"]`);
+    if (m) m.classList.toggle("flash", on);
+    const c = document.querySelector(`.an-note-card[data-i="${i}"]`);
+    if (c) c.classList.toggle("hot", on);
 }
 
 // ── Bot (ephemeral chat) ────────────────────────────────────────────────────────
