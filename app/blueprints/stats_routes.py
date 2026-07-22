@@ -81,3 +81,61 @@ def import_tabroom():
     result = scrape_record(url)
     result["tabroom_url"] = url
     return jsonify(result), (200 if result.get("ok") else 400)
+
+
+def _apply_scrape(rec, url, result):
+    """Persist a scraped Tabroom result: remember the link, and fold the
+    tournament into the record without double-counting on re-refresh (dedup by
+    tournament name)."""
+    rec.tabroom_url = url[:600]
+    name = (result.get("name") or "Tabroom results").strip()[:255]
+    wins, losses = _int(result.get("wins")), _int(result.get("losses"))
+    place = (result.get("place") or "").strip()[:80]
+
+    existing = TournamentResult.query.filter_by(record_id=rec.id, name=name).first()
+    if existing:
+        # adjust season totals by the delta, then overwrite the row
+        rec.wins = max(0, rec.wins - existing.wins + wins)
+        rec.losses = max(0, rec.losses - existing.losses + losses)
+        existing.wins, existing.losses = wins, losses
+        if place:
+            existing.place = place
+    else:
+        db.session.add(TournamentResult(
+            record_id=rec.id, name=name, wins=wins, losses=losses, place=place,
+        ))
+        rec.wins += wins
+        rec.losses += losses
+
+
+@bp.route("/connect", methods=["POST"])
+@login_required
+def connect_tabroom():
+    """First-time connect (and add-another): read a public Tabroom results link,
+    save it, and persist the record so it stays on the dashboard."""
+    url = ((request.get_json(silent=True) or {}).get("url") or "").strip()
+    if not url:
+        return jsonify({"ok": False, "error": "Paste your Tabroom results link."}), 400
+    result = scrape_record(url)
+    if not result.get("ok"):
+        return jsonify(result), 400
+    rec = _record_for(current_user, create=True)
+    _apply_scrape(rec, url, result)
+    db.session.commit()
+    return jsonify({"ok": True, "name": result.get("name"),
+                    "wins": rec.wins, "losses": rec.losses})
+
+
+@bp.route("/refresh", methods=["POST"])
+@login_required
+def refresh_tabroom():
+    """Re-read the saved Tabroom link and update the record."""
+    rec = _record_for(current_user)
+    if rec is None or not rec.tabroom_url:
+        return jsonify({"ok": False, "error": "Connect your Tabroom link first."}), 400
+    result = scrape_record(rec.tabroom_url)
+    if not result.get("ok"):
+        return jsonify(result), 400
+    _apply_scrape(rec, rec.tabroom_url, result)
+    db.session.commit()
+    return jsonify({"ok": True, "wins": rec.wins, "losses": rec.losses})

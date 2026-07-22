@@ -17,6 +17,34 @@ function dashToggleEdit() {
     if (!el.hidden) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
+// ── First-run connect + refresh from a public Tabroom link ────────────────────
+function dashConnect() {
+    const url = document.getElementById("connectUrl").value.trim();
+    const note = document.getElementById("connectNote");
+    const btn = document.getElementById("connectBtn");
+    if (!url) { note.style.color = "var(--loss)"; note.textContent = "Paste your Tabroom results link first."; note.hidden = false; return; }
+    note.style.color = "var(--text-mid)";
+    note.textContent = "Reading Tabroom…";
+    note.hidden = false;
+    btn.disabled = true;
+    postJSON("/stats/connect", { url }).then(d => {
+        if (!d.ok) { note.style.color = "var(--loss)"; note.textContent = d.error || "Couldn't connect."; btn.disabled = false; return; }
+        note.style.color = "var(--win)";
+        note.textContent = "Connected! " + d.wins + "W / " + d.losses + "L. Loading…";
+        location.reload();
+    }).catch(() => { note.style.color = "var(--loss)"; note.textContent = "Connect failed."; btn.disabled = false; });
+}
+
+function dashRefresh() {
+    const btn = document.getElementById("refreshBtn");
+    if (btn) { btn.disabled = true; btn.textContent = "Refreshing…"; }
+    postJSON("/stats/refresh").then(d => {
+        if (d.ok) { location.reload(); return; }
+        if (btn) { btn.disabled = false; btn.textContent = "Refresh stats"; }
+        alert(d.error || "Couldn't refresh from Tabroom.");
+    }).catch(() => { if (btn) { btn.disabled = false; btn.textContent = "Refresh stats"; } });
+}
+
 function dashImport() {
     const url = document.getElementById("tabUrl").value.trim();
     const note = document.getElementById("importNote");

@@ -129,3 +129,34 @@
     .stat-grid { grid-template-columns: repeat(2, 1fr); }
     .dash-cols { grid-template-columns: 1fr; }
 }
+
+/* ── Tabroom connect (first run) + connected badge ── */
+.dash-hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.dash-editbtn.ghost { background: var(--surface-2); color: var(--text-hi); box-shadow: none; border: 1px solid var(--line-md); }
+.dash-editbtn.ghost:hover { background: var(--surface-3); box-shadow: none; }
+.tab-connected {
+    display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600;
+    color: var(--text-mid); background: var(--surface-1); border: 1px solid var(--line-md);
+    border-radius: 999px; padding: 6px 12px;
+}
+.tab-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--win); box-shadow: 0 0 8px var(--win); }
+
+.tab-connect {
+    display: flex; gap: 18px; align-items: flex-start;
+    background: var(--grad-surface); border: 1px solid var(--accent);
+    border-radius: 16px; padding: 20px 22px; margin-bottom: 24px; box-shadow: var(--glow-accent);
+}
+.tab-connect-icon { font-size: 30px; line-height: 1; flex-shrink: 0; }
+.tab-connect-body { flex: 1; min-width: 0; }
+.tab-connect-h { font-size: 18px; font-weight: 800; margin-bottom: 6px; color: var(--text-hi); }
+.tab-connect-p { font-size: 14px; color: var(--text-mid); line-height: 1.55; margin-bottom: 14px; }
+.tab-connect-safe { display: block; margin-top: 6px; font-size: 13px; color: var(--text-lo); }
+.tab-connect .dash-row { display: flex; gap: 10px; }
+.tab-connect .dash-input { flex: 1; }
+.tab-connect-skip {
+    display: inline-block; margin-top: 12px; background: none; border: none; cursor: pointer;
+    color: var(--accent); font-size: 13px; font-weight: 600; padding: 0;
+}
+.tab-connect-skip:hover { text-decoration: underline; }
+
+@media (max-width: 620px) { .tab-connect { flex-direction: column; gap: 12px; } .tab-connect .dash-row { flex-direction: column; } }

@@ -14,8 +14,38 @@
         <h1 class="dash-title">Welcome back, {{ (current_user.name or current_user.email).split(' ')[0] }}</h1>
         <p class="dash-sub">Here's how the season's going.</p>
       </div>
-      <button class="dash-editbtn" onclick="dashToggleEdit()">Update my record</button>
+      <div class="dash-hero-actions">
+        {% if record and record.tabroom_url %}
+        <span class="tab-connected" title="{{ record.tabroom_url }}">
+          <span class="tab-dot"></span> Tabroom connected
+        </span>
+        <button class="dash-editbtn ghost" id="refreshBtn" onclick="dashRefresh()">Refresh stats</button>
+        {% endif %}
+        <button class="dash-editbtn" onclick="dashToggleEdit()">Update my record</button>
+      </div>
     </header>
+
+    {% if not record or not record.tabroom_url %}
+    <!-- First-run: connect Tabroom once, keep stats forever -->
+    <div class="tab-connect" id="tabConnect">
+      <div class="tab-connect-icon">📊</div>
+      <div class="tab-connect-body">
+        <h2 class="tab-connect-h">Connect your Tabroom to track your stats</h2>
+        <p class="tab-connect-p">
+          Paste a link to your <strong>public Tabroom results</strong> (open a tournament on
+          tabroom.com, click <em>Record</em>, and copy the address). We'll pull your win-loss
+          record and keep it on your dashboard — refresh it anytime.
+          <span class="tab-connect-safe">🔒 No password needed — we only read public results.</span>
+        </p>
+        <div class="dash-row">
+          <input id="connectUrl" class="dash-input" placeholder="https://www.tabroom.com/index/tourn/postings/...">
+          <button class="dash-btn" id="connectBtn" onclick="dashConnect()">Connect</button>
+        </div>
+        <div id="connectNote" class="dash-note" hidden></div>
+        <button class="tab-connect-skip" onclick="dashToggleEdit()">or enter my record manually</button>
+      </div>
+    </div>
+    {% endif %}
 
     {% set wins = record.wins if record else 0 %}
     {% set losses = record.losses if record else 0 %}
