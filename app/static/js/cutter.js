@@ -98,3 +98,37 @@ function saveCut() {
     })
     .catch(() => { note.textContent = "Couldn't save."; note.hidden = false; btn.disabled = false; });
 }
+
+// ── AI analysis (runs in the visitor's own browser, no server cost) ────────────
+async function analyzeWithAI() {
+    if (!lastCut) return;
+    const statusEl = document.getElementById("aiStatus");
+    const out = document.getElementById("aiOutput");
+    window.RRHSAI.bindStatus(statusEl);
+
+    const contention = document.getElementById("aiContention").value.trim();
+    const tag = document.getElementById("resTag").value.trim() || lastCut.tag;
+
+    out.hidden = true;
+    statusEl.textContent = "Thinking…";
+
+    let prompt =
+        `You are helping a policy/LD debate student understand a piece of evidence.\n\n` +
+        `Tag: ${tag}\nPassage: ${lastCut.passage_text}\n\n` +
+        `Explain in plain terms what this evidence argues and what its warrant (reasoning) is.`;
+    if (contention) {
+        prompt += `\n\nThe student wants to use it for this contention/argument: "${contention}". ` +
+            `Evaluate how strongly this evidence actually links to and warrants that contention, ` +
+            `and note any gaps.`;
+    }
+
+    try {
+        const answer = await window.RRHSAI.ask(prompt,
+            "You are a concise, accurate debate coach. Use short paragraphs, no markdown symbols.");
+        out.textContent = answer;
+        out.hidden = false;
+        statusEl.textContent = "";
+    } catch (e) {
+        statusEl.textContent = e.message || "AI analysis failed.";
+    }
+}

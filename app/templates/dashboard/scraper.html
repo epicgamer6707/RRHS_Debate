@@ -11,10 +11,12 @@
   <!-- ── topbar ── -->
   <div class="topbar">
     <div class="search-wrap">
-      <input id="query" placeholder="Search evidence…" value="cap k"
+      <input id="query" placeholder="Search evidence… or describe what you want and click Ask AI"
              onkeydown="if(event.key==='Enter') runSearch()"/>
       <button class="btn-search" id="btn" onclick="runSearch()">Search</button>
+      <button class="btn-search" id="aiBtn" onclick="aiAssistSearch()" title="Turn a plain-English request into a search">Ask AI</button>
     </div>
+    <span id="aiSearchStatus" class="status-text"></span>
     <button class="btn-copyall" id="copyAllBtn" onclick="copyAll()">Copy All</button>
   </div>
 
@@ -106,5 +108,6 @@
 {% endblock %}
 
 {% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/ai.js') }}"></script>
 <script src="{{ url_for('static', filename='js/scraper.js') }}"></script>
 {% endblock %}

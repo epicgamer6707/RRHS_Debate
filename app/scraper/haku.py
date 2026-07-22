@@ -117,7 +117,7 @@ def _scrape(page, query, year, event, out_q):
     total = len(card_els)
 
     if total == 0:
-        out_q.put(("err", "No cards found — try different filters"))
+        out_q.put(("err", "No cards found for that search. Try different keywords, or use Card Analyzer to build one from an article."))
         return
 
     count = 0

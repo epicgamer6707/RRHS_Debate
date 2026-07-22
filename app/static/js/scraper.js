@@ -43,6 +43,33 @@ function setHL(mode) {
     applyFormat();
 }
 
+// ── AI-assisted search (runs in the visitor's browser, no server cost) ─────────
+async function aiAssistSearch() {
+    const input = document.getElementById("query");
+    const statusEl = document.getElementById("aiSearchStatus");
+    const btn = document.getElementById("aiBtn");
+    const request = input.value.trim();
+    if (!request) return;
+
+    window.RRHSAI.bindStatus(statusEl);
+    btn.disabled = true;
+    statusEl.textContent = "Thinking…";
+    try {
+        const keywords = await window.RRHSAI.ask(
+            `Convert this request into short search keywords (3-6 words, no punctuation, ` +
+            `no explanation) for a debate evidence search engine.\nRequest: ${request}`,
+            "Reply with ONLY the keywords, nothing else."
+        );
+        input.value = keywords.trim().replace(/^"|"$/g, "").split("\n")[0];
+        statusEl.textContent = "";
+        runSearch();
+    } catch (e) {
+        statusEl.textContent = e.message || "AI search assist failed.";
+    } finally {
+        btn.disabled = false;
+    }
+}
+
 // ── search ────────────────────────────────────────────────────────────────────
 function runSearch() {
     const btn   = document.getElementById("btn");

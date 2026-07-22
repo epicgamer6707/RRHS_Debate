@@ -1,5 +1,5 @@
 {% extends "dashboard/layout.html" %}
-{% block title %}Card Cutter{% endblock %}
+{% block title %}Card Analyzer{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cutter.css') }}">
 {% endblock %}
@@ -7,10 +7,11 @@
 {% block tool %}
 <div class="cut-wrap">
   <div class="cut-inner">
-    <h1 class="cut-h1">Card Cutter</h1>
+    <h1 class="cut-h1">Card Analyzer</h1>
     <p class="cut-sub">
       Give it a source and say what card you want. It pulls the passage,
-      builds a citation, and drafts a tag.
+      builds a citation, and drafts a tag — then AI can explain the argument
+      and evaluate how well it links to your contention.
     </p>
 
     <div class="cut-modes">
@@ -58,11 +59,20 @@
       <div class="cut-result-body">
         <div class="right-content" id="resBody"></div>
       </div>
+
+      <div class="cut-field" style="margin-top:16px;">
+        <label>Your argument idea <span class="cut-dim">(optional — for link/strength analysis)</span></label>
+        <input id="aiContention" class="cut-input" placeholder="e.g. this proves capitalism causes environmental collapse">
+      </div>
+      <button class="cut-btn" onclick="analyzeWithAI()">Analyze with AI</button>
+      <span id="aiStatus" class="cut-dim"></span>
+      <div id="aiOutput" class="cut-result-body" style="margin-top:12px;" hidden></div>
     </div>
   </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/ai.js') }}"></script>
 <script src="{{ url_for('static', filename='js/cutter.js') }}"></script>
 {% endblock %}
