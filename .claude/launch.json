@@ -1,11 +1,6 @@
 {
   "version": "0.0.1",
   "configurations": [
-    {
-      "name": "rrhs-web",
-      "runtimeExecutable": ".venv/bin/python",
-      "runtimeArgs": ["wsgi.py"],
-      "port": 5000
-    }
+    { "name": "rrhs", "runtimeExecutable": ".venv/bin/python", "runtimeArgs": ["-m","flask","run","--port","5001"], "port": 5001 }
   ]
 }

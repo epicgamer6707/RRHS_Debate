@@ -124,39 +124,53 @@ select.cut-input {
 .an-btn[disabled] { opacity: .6; cursor: default; transform: none; }
 .an-note { font-size: 13px; color: var(--text-mid); }
 
-.an-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
-.an-tab { background: none; border: none; cursor: pointer; padding: 9px 16px; font-size: 14.5px; font-weight: 700; color: var(--text-mid); border-bottom: 2px solid transparent; margin-bottom: -1px; }
-.an-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.an-idea { }
 
-.an-idea-row { display: flex; gap: 10px; margin-bottom: 12px; }
-.an-idea-row .an-input { flex: 1; }
+/* ── results layout ── */
+.an-reset { background: none; border: none; color: var(--accent); font-size: 13px; font-weight: 600; cursor: pointer; padding: 0; margin-bottom: 14px; }
+.an-reset:hover { text-decoration: underline; }
 
-/* annotated result: text + side callouts */
-.an-result { display: grid; grid-template-columns: 1fr 300px; gap: 18px; align-items: start; }
-.an-tagline { grid-column: 1 / -1; font-size: 16px; font-weight: 700; line-height: 1.5; color: var(--text-hi); background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 12px; padding: 14px 16px; }
+.an-tagline { font-size: 17px; font-weight: 700; line-height: 1.5; color: var(--text-hi); background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 12px; padding: 15px 18px; margin-bottom: 16px; }
 .an-tagline-label { display: inline-block; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-right: 10px; vertical-align: middle; }
-.an-text { background: #eceef4; color: #1b1d38; border-radius: 12px; padding: 18px 20px; line-height: 1.9; font-size: 14px; word-break: break-word; }
-.an-callouts { display: flex; flex-direction: column; gap: 10px; }
-.callout { border: 1px solid var(--line); border-left-width: 4px; border-radius: 10px; padding: 10px 12px; background: var(--grad-surface); cursor: default; transition: transform .12s, box-shadow .12s; }
-.callout.flash { transform: translateX(-3px); box-shadow: var(--glow-accent); }
-.callout-role { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; }
-.callout-note { font-size: 13px; color: var(--text-mid); line-height: 1.5; margin-top: 4px; }
-.seg { border-radius: 3px; padding: 1px 2px; cursor: pointer; color: #1b1d38; }
-.seg.flash { outline: 2px solid var(--accent); }
 
-/* role colors */
-.role-warrant { border-left-color: var(--win); } .seg.role-warrant, mark.role-warrant { background: rgba(52,211,154,.4); }
-.role-interp  { border-left-color: var(--accent); } .seg.role-interp, mark.role-interp { background: rgba(46,156,202,.4); }
-.role-link    { border-left-color: var(--violet); } .seg.role-link, mark.role-link { background: rgba(155,140,255,.4); }
-.role-impact  { border-left-color: var(--loss); } .seg.role-impact, mark.role-impact { background: rgba(255,107,125,.4); }
-.role-uniqueness { border-left-color: var(--gold); } .seg.role-uniqueness, mark.role-uniqueness { background: rgba(245,196,81,.5); }
-.role-context { border-left-color: var(--text-lo); } .seg.role-context, mark.role-context { background: rgba(170,171,184,.4); }
-.callout-role { color: var(--text-hi); }
+.an-grid { display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: stretch; margin-bottom: 16px; }
+.an-card { background: var(--grad-surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: var(--glow-soft); }
+.an-card-title { font-size: 13px; font-weight: 700; color: var(--text-hi); margin-bottom: 12px; }
+.an-doc-hint { font-weight: 400; color: var(--text-lo); }
 
-@media (max-width: 720px) { .an-result { grid-template-columns: 1fr; } }
+/* pie chart */
+.an-chart-card { display: flex; flex-direction: column; align-items: center; }
+.an-chart { display: flex; justify-content: center; margin-bottom: 12px; }
+.an-chart-num { fill: var(--text-hi); font-size: 22px; font-weight: 800; }
+.an-chart-lbl { fill: var(--text-lo); font-size: 9px; text-transform: uppercase; letter-spacing: .1em; }
+.an-legend { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+.an-leg-item { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 8px; cursor: default; transition: background .12s; }
+.an-leg-item.flash, .an-leg-item:hover { background: var(--surface-2); }
+.an-leg-dot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+.an-leg-name { font-size: 13px; color: var(--text-hi); text-transform: capitalize; flex: 1; }
+.an-leg-count { font-size: 13px; font-weight: 700; color: var(--text-mid); }
+
+/* bot fills its cell */
+.an-bot-card { display: flex; flex-direction: column; }
+
+/* highlighted source doc */
+.an-doc { background: #eceef4; color: #1b1d38; border-radius: 12px; padding: 18px 20px; line-height: 1.95; font-size: 14px; word-break: break-word; max-height: 520px; overflow-y: auto; }
+.seg { border-radius: 3px; padding: 1px 3px; color: #1b1d38; position: relative; transition: box-shadow .12s; }
+.seg.flash { box-shadow: 0 0 0 2px var(--accent); }
+.seg-tag { display: inline-block; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #fff; background: rgba(27,29,56,.6); border-radius: 4px; padding: 0 4px; margin-left: 4px; vertical-align: middle; }
+
+/* role colors (fills for highlighted spans + legend already uses inline color) */
+.seg.role-warrant, mark.role-warrant { background: rgba(52,211,154,.45); }
+.seg.role-interp, mark.role-interp { background: rgba(46,156,202,.45); }
+.seg.role-link, mark.role-link { background: rgba(155,140,255,.45); }
+.seg.role-impact, mark.role-impact { background: rgba(255,107,125,.45); }
+.seg.role-uniqueness, mark.role-uniqueness { background: rgba(245,196,81,.55); }
+.seg.role-context, mark.role-context { background: rgba(170,171,184,.4); }
+
+@media (max-width: 760px) { .an-grid { grid-template-columns: 1fr; } }
 
 /* bot chat */
-.bot-msgs { min-height: 220px; max-height: 460px; overflow-y: auto; background: var(--surface-1); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+.bot-msgs { flex: 1; min-height: 200px; max-height: 340px; overflow-y: auto; background: var(--surface-1); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
 .bot-hint { color: var(--text-lo); font-size: 13px; padding: 6px; }
 .bot-msg { display: flex; margin-bottom: 10px; }
 .bot-msg.user { justify-content: flex-end; }

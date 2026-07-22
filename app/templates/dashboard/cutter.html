@@ -8,10 +8,10 @@
 <div class="an-wrap">
   <div class="an-inner">
     <h1 class="an-h1">Source Analyzer</h1>
-    <p class="an-sub">Load a source, then <strong>Analyze</strong> it against your idea, or open the <strong>Bot</strong> to ask anything about it.</p>
+    <p class="an-sub">Give it a source and your idea, and it maps out what's inside — tagline, a breakdown chart, the highlighted source, and a bot to ask anything.</p>
 
-    <!-- Source loader -->
-    <div class="an-source">
+    <!-- ── Setup: source + idea (both required) ── -->
+    <div id="anSetup" class="an-source">
       <div class="an-modes">
         <button class="an-mode active" data-m="url" onclick="anMode('url')">Link</button>
         <button class="an-mode" data-m="text" onclick="anMode('text')">Paste text</button>
@@ -20,37 +20,48 @@
       <input id="srcUrl" class="an-input" placeholder="https://article-url.com/...">
       <textarea id="srcText" class="an-input an-textarea" hidden placeholder="Paste the card or article text here"></textarea>
       <div id="srcFileWrap" hidden><input id="srcFile" type="file" accept=".pdf,.docx,.txt"></div>
+
+      <input id="ideaInput" class="an-input an-idea" style="margin-top:12px"
+             placeholder="Your idea / argument (e.g. protectionism is bad because it starts trade wars)"
+             onkeydown="if(event.key==='Enter') anRun()">
+
       <div class="an-source-row">
-        <button class="an-btn" id="loadBtn" onclick="anLoad()">Load card</button>
+        <button class="an-btn" id="analyzeBtn" onclick="anRun()">Analyze</button>
         <span id="srcNote" class="an-note"></span>
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div id="anTabs" class="an-tabs" hidden>
-      <button class="an-tab active" data-t="analyzer" onclick="anTab('analyzer')">Analyzer</button>
-      <button class="an-tab" data-t="bot" onclick="anTab('bot')">Bot</button>
-    </div>
+    <!-- ── Results (hidden until analyzed) ── -->
+    <div id="anResults" hidden>
+      <button class="an-reset" onclick="anResetView()">← New source</button>
 
-    <!-- Analyzer -->
-    <div id="anAnalyzer" class="an-panel" hidden>
-      <div class="an-idea-row">
-        <input id="ideaInput" class="an-input" placeholder="Your idea (e.g. protectionism is bad because it starts trade wars)"
-               onkeydown="if(event.key==='Enter') anAnalyze()">
-        <button class="an-btn" id="analyzeBtn" onclick="anAnalyze()">Analyze</button>
-      </div>
-      <div id="anStatus" class="an-note"></div>
-      <div id="anResult" class="an-result"></div>
-    </div>
+      <div id="anTagline" class="an-tagline" hidden></div>
 
-    <!-- Bot -->
-    <div id="anBot" class="an-panel" hidden>
-      <div id="botMsgs" class="bot-msgs">
-        <div class="bot-hint">Ask about this card, e.g. "find the exact warrant", "make a tagline", "what does this link to?"</div>
+      <div class="an-grid">
+        <!-- breakdown chart -->
+        <div class="an-card an-chart-card">
+          <div class="an-card-title">What's in this source</div>
+          <div id="anChart" class="an-chart"></div>
+          <div id="anLegend" class="an-legend"></div>
+        </div>
+
+        <!-- bot -->
+        <div class="an-card an-bot-card">
+          <div class="an-card-title">Ask the bot</div>
+          <div id="botMsgs" class="bot-msgs">
+            <div class="bot-hint">Ask about this source, e.g. "find the exact warrant", "make a tagline", "what does this link to?"</div>
+          </div>
+          <div class="bot-input-row">
+            <input id="botInput" class="an-input" placeholder="Ask the bot..." onkeydown="if(event.key==='Enter') anSend()">
+            <button class="an-btn" id="botSendBtn" onclick="anSend()">Send</button>
+          </div>
+        </div>
       </div>
-      <div class="bot-input-row">
-        <input id="botInput" class="an-input" placeholder="Ask the bot..." onkeydown="if(event.key==='Enter') anSend()">
-        <button class="an-btn" id="botSendBtn" onclick="anSend()">Send</button>
+
+      <!-- highlighted source below -->
+      <div class="an-card an-doc-card">
+        <div class="an-card-title">The source <span class="an-doc-hint">— scroll to see each highlighted part</span></div>
+        <div id="anDoc" class="an-doc"></div>
       </div>
     </div>
   </div>

@@ -1,7 +1,15 @@
-// ── Source Analyzer: load a source, Analyze (annotated), or Bot (ephemeral chat) ─
+// ── Source Analyzer: one combined view. Give a source + idea, get a tagline,
+//    a breakdown pie chart, the highlighted source, and an ephemeral bot. ────────
 let anSrcMode = "url";
 let anLoadedText = "";
+let anSegments = [];
 let botHistory = [];
+
+const ROLE_COLORS = {
+    warrant: "#34d39a", interp: "#2e9cca", link: "#9b8cff",
+    impact: "#ff6b7d", uniqueness: "#f5c451", context: "#aaabb8",
+};
+const ROLE_ORDER = ["warrant", "impact", "link", "interp", "uniqueness", "context"];
 
 function csrfToken() {
     const m = document.querySelector('meta[name="csrf-token"]');
@@ -18,7 +26,7 @@ function postJSON(url, body) {
     }).then(r => r.json());
 }
 
-// ── source loader ─────────────────────────────────────────────────────────────
+// ── source mode toggle ──────────────────────────────────────────────────────────
 function anMode(m) {
     anSrcMode = m;
     document.querySelectorAll(".an-mode").forEach(b => b.classList.toggle("active", b.dataset.m === m));
@@ -27,109 +35,151 @@ function anMode(m) {
     document.getElementById("srcFileWrap").hidden = m !== "file";
 }
 
-function anLoad() {
-    const note = document.getElementById("srcNote");
-    const btn = document.getElementById("loadBtn");
-    const fd = new FormData();
+// ── pull the raw text out of whatever the user gave us ──────────────────────────
+function extractSource() {
     if (anSrcMode === "text") {
         const t = document.getElementById("srcText").value.trim();
-        if (!t) { note.textContent = "Paste some text first."; return; }
-        fd.append("text", t);
-    } else if (anSrcMode === "url") {
+        return t ? Promise.resolve({ ok: true, text: t }) : Promise.resolve({ ok: false, error: "Paste some text first." });
+    }
+    const fd = new FormData();
+    if (anSrcMode === "url") {
         const u = document.getElementById("srcUrl").value.trim();
-        if (!u) { note.textContent = "Paste a link first."; return; }
+        if (!u) return Promise.resolve({ ok: false, error: "Paste a link first." });
         fd.append("url", u);
     } else {
         const f = document.getElementById("srcFile").files[0];
-        if (!f) { note.textContent = "Choose a file first."; return; }
+        if (!f) return Promise.resolve({ ok: false, error: "Choose a file first." });
         fd.append("file", f);
     }
-    btn.disabled = true; note.textContent = "Loading…";
-    fetch("/cutter/extract", { method: "POST", headers: { "X-CSRFToken": csrfToken() }, body: fd })
-        .then(r => r.json())
-        .then(d => {
-            if (!d.ok) { note.textContent = d.error || "Couldn't load."; return; }
-            anLoadedText = d.text;
-            note.textContent = "Card loaded (" + d.text.length + " chars).";
-            document.getElementById("anTabs").hidden = false;
-            anTab("analyzer");
-            botHistory = [];
-            document.getElementById("botMsgs").innerHTML =
-                '<div class="bot-hint">Ask about this card, e.g. "find the exact warrant", "make a tagline".</div>';
-        })
-        .catch(() => { note.textContent = "Something went wrong."; })
-        .finally(() => { btn.disabled = false; });
+    return fetch("/cutter/extract", { method: "POST", headers: { "X-CSRFToken": csrfToken() }, body: fd })
+        .then(r => r.json());
 }
 
-function anTab(t) {
-    document.querySelectorAll(".an-tab").forEach(b => b.classList.toggle("active", b.dataset.t === t));
-    document.getElementById("anAnalyzer").hidden = t !== "analyzer";
-    document.getElementById("anBot").hidden = t !== "bot";
-}
-
-// ── Analyzer (annotated highlights + side callouts) ────────────────────────────
-function anAnalyze() {
-    if (!anLoadedText) return;
-    const status = document.getElementById("anStatus");
+// ── run the whole analysis ──────────────────────────────────────────────────────
+function anRun() {
+    const note = document.getElementById("srcNote");
     const btn = document.getElementById("analyzeBtn");
     const idea = document.getElementById("ideaInput").value.trim();
-    status.textContent = "Analyzing…"; btn.disabled = true;
-    document.getElementById("anResult").innerHTML = "";
-    postJSON("/ai/analyze", { text: anLoadedText, idea })
+    if (!idea) { note.textContent = "Type your idea first — the analysis is built around it."; return; }
+
+    btn.disabled = true; note.textContent = "Reading the source…";
+    extractSource()
         .then(d => {
-            if (!d.ok) { status.textContent = d.error || "Analysis failed."; return; }
-            status.textContent = "";
-            renderAnalysis(d.segments || [], d.tagline || "");
+            if (!d.ok) throw new Error(d.error || "Couldn't load the source.");
+            anLoadedText = d.text;
+            note.textContent = "Analyzing against your idea…";
+            return postJSON("/ai/analyze", { text: anLoadedText, idea });
         })
-        .catch(() => { status.textContent = "Something went wrong."; })
+        .then(d => {
+            if (!d.ok) throw new Error(d.error || "Analysis failed.");
+            anSegments = d.segments || [];
+            note.textContent = "";
+            renderResults(d.tagline || "", anSegments);
+        })
+        .catch(e => { note.textContent = e.message || "Something went wrong."; })
         .finally(() => { btn.disabled = false; });
 }
 
-function renderAnalysis(segments, tagline) {
-    const el = document.getElementById("anResult");
-    const tagHtml = tagline
-        ? `<div class="an-tagline"><span class="an-tagline-label">Tagline</span>${esc(tagline)}</div>`
-        : "";
-    if (!segments.length) {
-        el.innerHTML = tagHtml + '<div class="an-note">No key sections found. Try rephrasing your idea.</div>';
+// ── render tagline + chart + highlighted source, reveal the bot ─────────────────
+function renderResults(tagline, segments) {
+    document.getElementById("anSetup").hidden = true;
+    document.getElementById("anResults").hidden = false;
+
+    // tagline
+    const tagEl = document.getElementById("anTagline");
+    if (tagline) {
+        tagEl.hidden = false;
+        tagEl.innerHTML = `<span class="an-tagline-label">Tagline</span>${esc(tagline)}`;
+    } else { tagEl.hidden = true; }
+
+    // breakdown counts
+    const counts = {};
+    segments.forEach(s => { const r = (s.role || "context"); counts[r] = (counts[r] || 0) + 1; });
+    renderChart(counts);
+
+    // highlighted source
+    renderDoc(segments);
+
+    // reset bot for this source
+    botHistory = [];
+    document.getElementById("botMsgs").innerHTML =
+        '<div class="bot-hint">Ask about this source, e.g. "find the exact warrant", "make a tagline".</div>';
+}
+
+function anResetView() {
+    document.getElementById("anResults").hidden = true;
+    document.getElementById("anSetup").hidden = false;
+    document.getElementById("srcNote").textContent = "";
+}
+
+// ── pie chart (pure SVG, no libraries) ──────────────────────────────────────────
+function renderChart(counts) {
+    const roles = ROLE_ORDER.filter(r => counts[r]);
+    const total = roles.reduce((a, r) => a + counts[r], 0);
+    const chart = document.getElementById("anChart");
+    const legend = document.getElementById("anLegend");
+
+    if (!total) {
+        chart.innerHTML = '<div class="an-note">No labeled parts found.</div>';
+        legend.innerHTML = "";
         return;
     }
 
-    // Build highlighted text: wrap each segment's quote where it appears.
+    const cx = 80, cy = 80, r = 70;
+    let a0 = -Math.PI / 2;
+    let paths = "";
+    roles.forEach(role => {
+        const frac = counts[role] / total;
+        const a1 = a0 + frac * 2 * Math.PI;
+        if (roles.length === 1) {
+            paths = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${ROLE_COLORS[role]}"/>`;
+        } else {
+            const x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0);
+            const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+            const large = frac > 0.5 ? 1 : 0;
+            paths += `<path d="M${cx},${cy} L${x0.toFixed(2)},${y0.toFixed(2)} A${r},${r} 0 ${large} 1 ${x1.toFixed(2)},${y1.toFixed(2)} Z" fill="${ROLE_COLORS[role]}" data-role="${role}"/>`;
+        }
+        a0 = a1;
+    });
+    chart.innerHTML =
+        `<svg viewBox="0 0 160 160" width="160" height="160">${paths}
+           <circle cx="${cx}" cy="${cy}" r="34" fill="var(--surface-1)"/>
+           <text x="${cx}" y="${cy - 4}" text-anchor="middle" class="an-chart-num">${total}</text>
+           <text x="${cx}" y="${cy + 12}" text-anchor="middle" class="an-chart-lbl">parts</text>
+         </svg>`;
+
+    legend.innerHTML = roles.map(role =>
+        `<div class="an-leg-item" data-role="${role}" onmouseenter="flashRole('${role}',true)" onmouseleave="flashRole('${role}',false)">
+            <span class="an-leg-dot" style="background:${ROLE_COLORS[role]}"></span>
+            <span class="an-leg-name">${role}</span>
+            <span class="an-leg-count">${counts[role]}</span>
+         </div>`).join("");
+}
+
+// ── highlighted source document ─────────────────────────────────────────────────
+function renderDoc(segments) {
     let html = esc(anLoadedText);
     segments.forEach((s, i) => {
         const q = esc((s.quote || "").trim());
         if (!q) return;
         const idx = html.indexOf(q);
         if (idx === -1) return;
+        const role = esc(s.role || "context");
+        const note = esc(s.note || "");
         html = html.slice(0, idx) +
-            `<mark class="seg role-${esc(s.role || "context")}" data-i="${i}">${q}</mark>` +
+            `<mark class="seg role-${role}" data-role="${role}" title="${role}: ${note}">${q}` +
+            `<span class="seg-tag">${role}</span></mark>` +
             html.slice(idx + q.length);
     });
-
-    const callouts = segments.map((s, i) =>
-        `<div class="callout role-${esc(s.role || "context")}" data-i="${i}"
-              onmouseenter="anFlash(${i}, true)" onmouseleave="anFlash(${i}, false)">
-            <span class="callout-role">${esc(s.role || "context")}</span>
-            <div class="callout-note">${esc(s.note || "")}</div>
-         </div>`).join("");
-
-    el.innerHTML = tagHtml +
-        `<div class="an-text">${html}</div>` +
-        `<div class="an-callouts">${callouts}</div>`;
-
-    el.querySelectorAll(".seg").forEach(m => {
-        m.addEventListener("mouseenter", () => anFlash(m.dataset.i, true));
-        m.addEventListener("mouseleave", () => anFlash(m.dataset.i, false));
-    });
+    document.getElementById("anDoc").innerHTML = html;
 }
 
-function anFlash(i, on) {
-    document.querySelectorAll(`.seg[data-i="${i}"],.callout[data-i="${i}"]`)
-        .forEach(e => e.classList.toggle("flash", on));
+function flashRole(role, on) {
+    document.querySelectorAll(`.seg[data-role="${role}"]`).forEach(e => e.classList.toggle("flash", on));
+    document.querySelectorAll(`.an-leg-item[data-role="${role}"]`).forEach(e => e.classList.toggle("flash", on));
 }
 
-// ── Bot (ephemeral chat) ───────────────────────────────────────────────────────
+// ── Bot (ephemeral chat) ────────────────────────────────────────────────────────
 function renderBot() {
     const box = document.getElementById("botMsgs");
     box.innerHTML = botHistory.map(m =>
@@ -161,7 +211,7 @@ function anSend() {
         .finally(() => { btn.disabled = false; input.focus(); });
 }
 
-// ── auto-load a card handed off from Card Finder ────────────────────────────────
+// ── auto-fill the source from a card handed off by Card Finder ───────────────────
 (function () {
     let stashed;
     try { stashed = sessionStorage.getItem("analyzerCard"); } catch (e) { return; }
@@ -170,15 +220,9 @@ function anSend() {
     let card;
     try { card = JSON.parse(stashed); } catch (e) { return; }
     if (!card || !card.text) return;
-
-    anLoadedText = card.text;
-    const note = document.getElementById("srcNote");
-    if (note) note.textContent = `Loaded “${(card.title || "card").slice(0, 60)}” from Card Finder.`;
-    const tabs = document.getElementById("anTabs");
-    if (tabs) tabs.hidden = false;
-    anTab("analyzer");
-    botHistory = [];
-    const box = document.getElementById("botMsgs");
-    if (box) box.innerHTML =
-        '<div class="bot-hint">Ask about this card, e.g. "find the exact warrant", "make a tagline".</div>';
+    anMode("text");
+    document.getElementById("srcText").value = card.text;
+    document.getElementById("srcNote").textContent =
+        `Loaded “${(card.title || "card").slice(0, 60)}” — add your idea, then Analyze.`;
+    document.getElementById("ideaInput").focus();
 })();
