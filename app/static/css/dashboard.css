@@ -4,7 +4,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-family: var(--font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif);
     background: var(--app-bg) fixed;
     color: var(--text-hi);
     overflow: hidden;
@@ -17,9 +17,9 @@ body {
 .sidebar {
     width: 232px;
     flex-shrink: 0;
-    background: linear-gradient(180deg, #2a2c56 0%, #22244a 100%);
+    background: linear-gradient(180deg, #0c0d11 0%, #08090c 100%);
     border-right: 1px solid var(--line);
-    box-shadow: 1px 0 0 rgba(70, 194, 238, 0.06), 8px 0 30px rgba(0, 0, 0, 0.25);
+    box-shadow: 1px 0 0 rgba(47, 109, 255, 0.06), 8px 0 30px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
 }

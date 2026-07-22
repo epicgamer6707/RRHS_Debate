@@ -35,14 +35,14 @@ def healthz():
 def dashboard():
     record = DebateRecord.query.filter_by(user_id=current_user.id).first()
     tabroom_link = TabroomLink.query.filter_by(user_id=current_user.id, confirmed=True).first()
-    leaderboard = (
+    # Rank by win rate first, then total wins — so a 0-win record never sits on top.
+    rows = (
         db.session.query(DebateRecord)
         .join(User, DebateRecord.user_id == User.id)
-        .filter((DebateRecord.wins + DebateRecord.losses) > 0)
-        .order_by(DebateRecord.wins.desc())
-        .limit(10)
+        .filter(DebateRecord.wins > 0)
         .all()
     )
+    leaderboard = sorted(rows, key=lambda r: (r.win_rate, r.wins), reverse=True)[:10]
     return render_template(
         "dashboard/home.html", active="home", record=record,
         leaderboard=leaderboard, tabroom_link=tabroom_link,

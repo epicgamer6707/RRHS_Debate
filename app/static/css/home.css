@@ -180,3 +180,21 @@
 
 /* off-screen decoy inputs that catch browser autofill */
 .autofill-decoy { position: absolute; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; z-index: -1; }
+
+/* Competition sign-up: set apart from the dashboard, a touch bigger */
+.comp-embed {
+    margin-top: 40px;
+    padding: 26px 26px 28px;
+    border: 1px solid var(--line-md);
+    box-shadow: var(--glow-soft);
+    position: relative;
+}
+.comp-embed::before {
+    content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 3px;
+    background: var(--grad-accent); border-radius: 3px 3px 0 0;
+}
+.comp-embed .panel-h2 { font-size: 22px; }
+.comp-embed .panel-sub { font-size: 14.5px; margin-bottom: 18px; }
+.comp-embed .comp-input { padding: 13px 15px; font-size: 15px; }
+.comp-embed .comp-field label { font-size: 13.5px; }
+.comp-embed .comp-btn-wide { padding: 14px 22px; font-size: 15px; }

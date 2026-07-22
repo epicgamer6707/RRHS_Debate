@@ -49,6 +49,7 @@
     </nav>
 
     <div class="sidebar-bottom">
+      <a class="nav-item" href="{{ url_for('logs.logs') }}">Logs</a>
       <a class="nav-item {{ 'active' if active == 'settings' }}" href="{{ url_for('main.dashboard_settings') }}">Settings</a>
     </div>
 

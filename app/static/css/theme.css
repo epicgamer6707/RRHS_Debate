@@ -1,41 +1,43 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    RRHS Debate — shared brand theme.
-   Palette from the "Type Terms" navy/cyan scheme. Loaded on every page so the
-   scraper, login, dashboard, etc. all share one source of truth.
+   Bold editorial look: near-black surfaces, electric-blue accent, heavy condensed
+   display type. Loaded on every page so scraper, login, dashboard all share it.
    ───────────────────────────────────────────────────────────────────────────── */
-:root {
-    /* Raw brand palette */
-    --c-navy:  #25274D;
-    --c-slate: #464866;
-    --c-gray:  #AAABB8;
-    --c-cyan:  #2E9CCA;
-    --c-blue:  #29648A;
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800;900&display=swap');
 
-    /* Dark-UI surfaces (derived) */
-    --surface-0: #1d1f3d;   /* deepest background         */
-    --surface-1: #25274D;   /* navy panels / bars         */
-    --surface-2: #2f3160;   /* raised cards / inputs       */
-    --surface-3: #464866;   /* slate — hover / higher lift */
+:root {
+    /* Display + body fonts */
+    --font-display: "Anton", "Arial Narrow", "Helvetica Neue", sans-serif;
+    --font-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+
+    /* Raw brand palette */
+    --c-blue:  #2f6dff;
+
+    /* Dark-UI surfaces (near-black) */
+    --surface-0: #08090c;   /* deepest background          */
+    --surface-1: #101216;   /* panels / bars               */
+    --surface-2: #17191f;   /* raised cards / inputs        */
+    --surface-3: #24272f;   /* hover / higher lift          */
 
     /* Text on dark surfaces */
-    --text-hi:  #edeef5;    /* primary   */
-    --text-mid: #aaabb8;    /* secondary */
-    --text-lo:  #7d80a0;    /* muted     */
+    --text-hi:  #f5f6f8;    /* primary   */
+    --text-mid: #9aa0ac;    /* secondary */
+    --text-lo:  #656b76;    /* muted     */
 
-    /* Accents */
-    --accent:        #2E9CCA; /* cyan — primary action      */
-    --accent-2:      #29648A; /* blue — hover / secondary   */
-    --accent-bright: #46c2ee; /* brighter cyan for glows    */
-    --accent-soft:   rgba(46, 156, 202, 0.15);
+    /* Accents — electric blue */
+    --accent:        #2f6dff;
+    --accent-2:      #1c50e0; /* hover / secondary          */
+    --accent-bright: #5b8cff; /* brighter blue for glows    */
+    --accent-soft:   rgba(47, 109, 255, 0.16);
 
     /* Gradients + glows for pop */
-    --grad-accent:       linear-gradient(135deg, #46c2ee 0%, #2E9CCA 48%, #29648A 100%);
-    --grad-accent-hover: linear-gradient(135deg, #5accf2 0%, #34a6d6 48%, #2b6f99 100%);
-    --grad-surface:      linear-gradient(160deg, #2b2d59 0%, #23254a 100%);
-    --grad-brand:        linear-gradient(120deg, #edeef5 0%, #7fd4f2 55%, #2E9CCA 100%);
-    --glow-accent:       0 6px 22px rgba(46, 156, 202, 0.38);
-    --glow-accent-lg:    0 10px 34px rgba(46, 156, 202, 0.45);
-    --glow-soft:         0 8px 30px rgba(0, 0, 0, 0.35);
+    --grad-accent:       linear-gradient(135deg, #4f83ff 0%, #2f6dff 55%, #1c50e0 100%);
+    --grad-accent-hover: linear-gradient(135deg, #6a97ff 0%, #3d78ff 55%, #2358f0 100%);
+    --grad-surface:      linear-gradient(160deg, #16181e 0%, #0e1014 100%);
+    --grad-brand:        linear-gradient(120deg, #f5f6f8 0%, #7ea3ff 55%, #2f6dff 100%);
+    --glow-accent:       0 6px 22px rgba(47, 109, 255, 0.40);
+    --glow-accent-lg:    0 10px 34px rgba(47, 109, 255, 0.48);
+    --glow-soft:         0 8px 30px rgba(0, 0, 0, 0.55);
 
     /* Semantic stat colors (dashboard) */
     --win:    #34d39a;  --win-soft:  rgba(52, 211, 154, 0.14);
@@ -47,42 +49,51 @@
     --grad-gold:   linear-gradient(135deg, #ffd873 0%, #eda92f 100%);
     --grad-violet: linear-gradient(135deg, #b3a6ff 0%, #7c6cf0 100%);
 
-    /* App backdrop: faint cyan aurora over the deep navy */
+    /* App backdrop: near-black with a faint blue glow up top */
     --app-bg:
-        radial-gradient(1100px 620px at 15% -8%, rgba(70, 194, 238, 0.12), transparent 60%),
-        radial-gradient(900px 520px at 100% 0%, rgba(41, 100, 138, 0.16), transparent 55%),
+        radial-gradient(1100px 620px at 12% -10%, rgba(47, 109, 255, 0.10), transparent 60%),
+        radial-gradient(900px 520px at 100% 0%, rgba(28, 80, 224, 0.08), transparent 55%),
         var(--surface-0);
 
     /* Hairlines on dark surfaces */
-    --line:    rgba(255, 255, 255, 0.08);
-    --line-md: rgba(255, 255, 255, 0.15);
+    --line:    rgba(255, 255, 255, 0.09);
+    --line-md: rgba(255, 255, 255, 0.16);
 }
 
 /* ── Light mode (opt-in via data-theme="light") ── */
 :root[data-theme="light"] {
-    --surface-0: #eef0f7;
+    --surface-0: #f3f4f8;
     --surface-1: #ffffff;
     --surface-2: #f1f3f9;
     --surface-3: #e4e7f0;
 
-    --text-hi:  #1b1d38;
-    --text-mid: #565a7c;
+    --text-hi:  #0c0d12;
+    --text-mid: #4c5261;
     --text-lo:  #8b8fac;
 
-    --line:    rgba(20, 22, 50, 0.10);
-    --line-md: rgba(20, 22, 50, 0.16);
+    --line:    rgba(12, 13, 18, 0.10);
+    --line-md: rgba(12, 13, 18, 0.16);
 
     --grad-surface: linear-gradient(160deg, #ffffff 0%, #f3f4fb 100%);
-    --grad-brand:   linear-gradient(120deg, #1b1d38 0%, #2E9CCA 60%, #29648A 100%);
-    --glow-soft:    0 8px 26px rgba(20, 22, 50, 0.10);
+    --grad-brand:   linear-gradient(120deg, #0c0d12 0%, #2f6dff 60%, #1c50e0 100%);
+    --glow-soft:    0 8px 26px rgba(12, 13, 18, 0.10);
 
     --app-bg:
-        radial-gradient(1100px 620px at 15% -8%, rgba(46, 156, 202, 0.14), transparent 60%),
-        radial-gradient(900px 520px at 100% 0%, rgba(41, 100, 138, 0.10), transparent 55%),
-        #eef0f7;
+        radial-gradient(1100px 620px at 12% -10%, rgba(47, 109, 255, 0.12), transparent 60%),
+        radial-gradient(900px 520px at 100% 0%, rgba(28, 80, 224, 0.08), transparent 55%),
+        #f3f4f8;
 }
 /* Hardcoded surfaces that need a light-mode counterpart */
 :root[data-theme="light"] .sidebar {
     background: linear-gradient(180deg, #ffffff 0%, #f3f4fb 100%);
     box-shadow: 1px 0 0 rgba(20, 22, 50, 0.05), 8px 0 30px rgba(20, 22, 50, 0.06);
+}
+
+/* ── Editorial display treatment shared across pages ── */
+.display, .dash-title, .comp-h1, .an-h1, .cut-h1, .logs-h1, .hero-title,
+.panel-h2, .lib-h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }

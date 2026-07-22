@@ -4,49 +4,57 @@
 <div class="landing">
   <header class="landing-nav">
     <a class="brand brand-link" href="{{ url_for('main.index') }}" style="margin-bottom:0;">
-      <img class="brand-logo" src="{{ url_for('static', filename='img/logo.png') }}" alt="RRHS Debate logo">
+      <span class="brand-badge">RR</span>
       <div class="brand-name">RRHS <span>Debate</span></div>
     </a>
     <div class="landing-nav-actions">
-      <a class="btn-inline" href="{{ url_for('logs.logs') }}">Logs</a>
+      <a class="topnav-link" href="{{ url_for('logs.logs') }}">Logs</a>
       {% if current_user.is_authenticated %}
-        <span class="landing-welcome">Welcome, {{ current_user.name or current_user.email }}</span>
+        <span class="landing-welcome">{{ current_user.name or current_user.email }}</span>
         <a class="btn-inline" href="{{ url_for('auth.logout') }}">Sign out</a>
       {% else %}
-        <a class="btn-inline" href="{{ url_for('auth.login') }}">Sign in</a>
+        <a class="topnav-link" href="{{ url_for('auth.login') }}">Sign in</a>
         <a class="btn-inline primary" href="{{ url_for('auth.signup') }}">Get started</a>
       {% endif %}
     </div>
   </header>
 
   <main class="hero">
-    <h1 class="hero-title">The RRHS Debate<br><span>evidence workspace</span></h1>
-    <p class="hero-sub">
-      Find and format cards, build your personal library, and sign up for
-      tournaments, all in one place, built for the team.
-    </p>
-    <div class="hero-actions">
-      {% if current_user.is_authenticated %}
-        <a class="btn-inline primary lg" href="{{ url_for('main.dashboard') }}">Go to your tools</a>
-      {% else %}
-        <a class="btn-inline primary lg" href="{{ url_for('auth.signup') }}">Create your account</a>
-        <a class="btn-inline lg" href="{{ url_for('auth.login') }}">Sign in</a>
-      {% endif %}
+    <div class="hero-left">
+      <h1 class="hero-title">The Debate<br>Evidence<br><span>Workspace.</span></h1>
+      <p class="hero-sub">
+        Find and format cards, build your personal library, and sign up for
+        tournaments — all in one place, built for the team.
+      </p>
+      <div class="hero-actions">
+        {% if current_user.is_authenticated %}
+          <a class="btn-inline primary lg" href="{{ url_for('main.dashboard') }}">Go to your tools</a>
+        {% else %}
+          <a class="btn-inline primary lg" href="{{ url_for('auth.signup') }}">Go to your tools</a>
+        {% endif %}
+        <a class="btn-inline lg" href="{{ url_for('auth.login') if not current_user.is_authenticated else url_for('main.dashboard') }}">View library</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hstat"><div class="hstat-num">4,800+</div><div class="hstat-label">Cards formatted</div></div>
+        <div class="hstat"><div class="hstat-num">62</div><div class="hstat-label">Tournaments</div></div>
+        <div class="hstat"><div class="hstat-num">18</div><div class="hstat-label">Active members</div></div>
+        <div class="hstat"><div class="hstat-num">3.2s</div><div class="hstat-label">Avg format time</div></div>
+      </div>
     </div>
 
-    <div class="feature-row">
-      <div class="feature">
-        <h3>Card Finder</h3>
-        <p>Find evidence and format it cleanly in seconds.</p>
+    <!-- Photo collage. Drop team photos in app/static/img/collage/1.jpg … 6.jpg
+         to fill the tiles; a dark-blue gradient shows until then. -->
+    <div class="hero-collage">
+      <div class="tile tile-a" style="background-image: linear-gradient(180deg, rgba(8,9,12,.15), rgba(8,9,12,.75)), url('{{ url_for('static', filename='img/collage/1.jpg') }}');">
+        <span class="tile-cap">Districts recap →</span>
       </div>
-      <div class="feature">
-        <h3>Competition Sign-up</h3>
-        <p>Register for tournaments straight from a Tabroom link.</p>
+      <div class="tile tile-b" style="background-image: linear-gradient(180deg, rgba(8,9,12,.15), rgba(8,9,12,.7)), url('{{ url_for('static', filename='img/collage/2.jpg') }}');"></div>
+      <div class="tile tile-c" style="background-image: linear-gradient(180deg, rgba(8,9,12,.15), rgba(8,9,12,.7)), url('{{ url_for('static', filename='img/collage/3.jpg') }}');"></div>
+      <div class="tile tile-d" style="background-image: linear-gradient(180deg, rgba(8,9,12,.15), rgba(8,9,12,.75)), url('{{ url_for('static', filename='img/collage/4.jpg') }}');">
+        <span class="tile-cap">Cedar Ridge recap →</span>
       </div>
-      <div class="feature">
-        <h3>Library</h3>
-        <p>Save and organize your strongest cards.</p>
-      </div>
+      <div class="tile tile-e" style="background-image: linear-gradient(180deg, rgba(8,9,12,.15), rgba(8,9,12,.7)), url('{{ url_for('static', filename='img/collage/5.jpg') }}');"></div>
     </div>
   </main>
 </div>
