@@ -1,5 +1,4 @@
 flask
-playwright
 flask-sqlalchemy
 flask-login
 flask-wtf
