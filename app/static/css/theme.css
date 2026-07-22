@@ -37,6 +37,16 @@
     --glow-accent-lg:    0 10px 34px rgba(46, 156, 202, 0.45);
     --glow-soft:         0 8px 30px rgba(0, 0, 0, 0.35);
 
+    /* Semantic stat colors (dashboard) */
+    --win:    #34d39a;  --win-soft:  rgba(52, 211, 154, 0.14);
+    --loss:   #ff6b7d;  --loss-soft: rgba(255, 107, 125, 0.14);
+    --gold:   #f5c451;  --gold-soft: rgba(245, 196, 81, 0.16);
+    --violet: #9b8cff;  --violet-soft: rgba(155, 140, 255, 0.16);
+    --grad-win:    linear-gradient(135deg, #4be6ac 0%, #2bbd87 100%);
+    --grad-loss:   linear-gradient(135deg, #ff8a97 0%, #ef5a6f 100%);
+    --grad-gold:   linear-gradient(135deg, #ffd873 0%, #eda92f 100%);
+    --grad-violet: linear-gradient(135deg, #b3a6ff 0%, #7c6cf0 100%);
+
     /* App backdrop: faint cyan aurora over the deep navy */
     --app-bg:
         radial-gradient(1100px 620px at 15% -8%, rgba(70, 194, 238, 0.12), transparent 60%),

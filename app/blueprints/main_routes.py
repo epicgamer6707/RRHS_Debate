@@ -6,7 +6,8 @@ Card Scraper, Sign up for Competition, and Library.
 from flask import Blueprint, render_template, redirect, url_for
 from flask_login import login_required, current_user
 
-from ..models import SavedCard
+from ..extensions import db
+from ..models import SavedCard, DebateRecord, User
 
 bp = Blueprint("main", __name__)
 
@@ -20,8 +21,18 @@ def index():
 @bp.route("/dashboard")
 @login_required
 def dashboard():
-    # Default landing tool inside the dashboard.
-    return redirect(url_for("main.dashboard_scraper"))
+    record = DebateRecord.query.filter_by(user_id=current_user.id).first()
+    leaderboard = (
+        db.session.query(DebateRecord)
+        .join(User, DebateRecord.user_id == User.id)
+        .filter((DebateRecord.wins + DebateRecord.losses) > 0)
+        .order_by(DebateRecord.wins.desc())
+        .limit(10)
+        .all()
+    )
+    return render_template(
+        "dashboard/home.html", active="home", record=record, leaderboard=leaderboard,
+    )
 
 
 @bp.route("/dashboard/classroom")

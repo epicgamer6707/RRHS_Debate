@@ -1,0 +1,131 @@
+/* ── Dashboard home ── */
+.dash { height: 100%; overflow-y: auto; padding: 30px 26px 70px; }
+.dash-inner { max-width: 940px; margin: 0 auto; }
+
+.dash-hero {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 26px;
+}
+.dash-eyebrow {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent-bright); margin-bottom: 8px;
+}
+.dash-title {
+    font-size: clamp(26px, 4vw, 38px); font-weight: 850; letter-spacing: -0.7px;
+    line-height: 1.05;
+    background: var(--grad-brand); -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+}
+.dash-sub { color: var(--text-mid); font-size: 15px; margin-top: 6px; }
+.dash-editbtn {
+    padding: 10px 18px; font-size: 13.5px; font-weight: 700; color: #fff;
+    background: var(--grad-accent); border: none; border-radius: 10px; cursor: pointer;
+    box-shadow: var(--glow-accent); white-space: nowrap;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.dash-editbtn:hover { transform: translateY(-1px); box-shadow: var(--glow-accent-lg); }
+
+/* stat cards */
+.stat-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px;
+}
+.stat-card {
+    position: relative; overflow: hidden;
+    border-radius: 16px; padding: 20px 18px;
+    background: var(--grad-surface); border: 1px solid var(--line);
+    box-shadow: var(--glow-soft);
+}
+.stat-card::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
+}
+.stat-card.win::before { background: var(--grad-win); }
+.stat-card.loss::before { background: var(--grad-loss); }
+.stat-card.rate::before { background: var(--grad-accent); }
+.stat-card.tourns::before { background: var(--grad-violet); }
+.stat-num { font-size: 40px; font-weight: 850; line-height: 1; letter-spacing: -1px; }
+.stat-unit { font-size: 22px; font-weight: 700; opacity: 0.7; }
+.stat-card.win .stat-num { color: var(--win); }
+.stat-card.loss .stat-num { color: var(--loss); }
+.stat-card.rate .stat-num { color: var(--accent-bright); }
+.stat-card.tourns .stat-num { color: var(--violet); }
+.stat-label {
+    margin-top: 8px; font-size: 12.5px; font-weight: 600; color: var(--text-mid);
+    text-transform: uppercase; letter-spacing: 0.06em;
+}
+
+/* win/loss bar */
+.wl-bar {
+    display: flex; height: 12px; border-radius: 8px; overflow: hidden;
+    background: var(--surface-2); margin-bottom: 8px;
+}
+.wl-win { background: var(--grad-win); }
+.wl-loss { background: var(--grad-loss); }
+.wl-legend { font-size: 12.5px; color: var(--text-mid); margin-bottom: 24px; display: flex; align-items: center; gap: 6px; }
+.wl-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.wl-dot.win { background: var(--win); margin-left: 10px; }
+.wl-dot.loss { background: var(--loss); margin-left: 10px; }
+
+/* panels */
+.dash-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 4px; }
+.dash-panel {
+    background: var(--grad-surface); border: 1px solid var(--line);
+    border-radius: 16px; padding: 20px; box-shadow: var(--glow-soft); margin-bottom: 16px;
+}
+.panel-h2 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+.panel-h3 { font-size: 14px; font-weight: 800; margin: 20px 0 10px; }
+.panel-sub { font-size: 12.5px; color: var(--text-mid); margin-bottom: 14px; }
+.dash-empty { color: var(--text-lo); font-size: 13.5px; padding: 8px 0; }
+
+/* edit form */
+.dash-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-end; }
+.dash-row.two { display: grid; grid-template-columns: 1fr 1fr; }
+.dash-row.three { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+.dash-row label { display: block; font-size: 12px; font-weight: 600; color: var(--text-mid); margin-bottom: 5px; }
+.dash-input {
+    width: 100%; padding: 10px 12px; font-size: 14px; font-family: inherit;
+    color: var(--text-hi); background: var(--surface-2);
+    border: 1px solid var(--line-md); border-radius: 9px; outline: none;
+}
+.dash-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.dash-btn {
+    padding: 10px 18px; font-size: 13.5px; font-weight: 700; color: #fff;
+    background: var(--grad-accent); border: none; border-radius: 9px; cursor: pointer;
+    box-shadow: var(--glow-accent);
+}
+.dash-btn:hover { background: var(--grad-accent-hover); }
+.dash-btn.ghost {
+    background: var(--surface-2); color: var(--text-hi); box-shadow: none;
+    border: 1px solid var(--line-md);
+}
+.dash-btn.ghost:hover { background: var(--surface-3); }
+.dash-note { font-size: 13px; margin-bottom: 12px; color: var(--win); }
+
+/* tournaments */
+.tourn-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.tourn-row:last-child { border-bottom: none; }
+.tourn-name { font-size: 14px; font-weight: 700; color: var(--text-hi); }
+.tourn-meta { font-size: 12px; color: var(--text-lo); margin-top: 2px; }
+.tourn-rec { font-size: 13px; font-weight: 700; white-space: nowrap; }
+.rec-w { color: var(--win); } .rec-l { color: var(--loss); }
+.tourn-del { background: none; border: none; color: var(--text-lo); cursor: pointer; font-size: 16px; margin-left: 6px; }
+.tourn-del:hover { color: var(--loss); }
+
+/* leaderboard */
+.lb-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.lb-row:last-child { border-bottom: none; }
+.lb-rank {
+    width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: var(--text-mid);
+    background: var(--surface-2); border: 1px solid var(--line-md);
+}
+.lb-row.top .lb-rank { background: var(--grad-gold); color: #3a2c05; border: none; box-shadow: 0 3px 12px var(--gold-soft); }
+.lb-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: var(--text-hi); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lb-you { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); padding: 1px 6px; border-radius: 20px; margin-left: 4px; }
+.lb-stat { font-size: 13px; font-weight: 800; color: var(--win); white-space: nowrap; }
+.lb-rate { color: var(--text-lo); font-weight: 600; }
+
+@media (max-width: 720px) {
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .dash-cols { grid-template-columns: 1fr; }
+}

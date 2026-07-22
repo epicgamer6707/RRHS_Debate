@@ -1,0 +1,128 @@
+{% extends "dashboard/layout.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+{% endblock %}
+
+{% block tool %}
+<div class="dash">
+  <div class="dash-inner">
+
+    <header class="dash-hero">
+      <div>
+        <div class="dash-eyebrow">RRHS Debate</div>
+        <h1 class="dash-title">Welcome back, {{ (current_user.name or current_user.email).split(' ')[0] }}</h1>
+        <p class="dash-sub">Here's how the season's going.</p>
+      </div>
+      <button class="dash-editbtn" onclick="dashToggleEdit()">Update my record</button>
+    </header>
+
+    {% set wins = record.wins if record else 0 %}
+    {% set losses = record.losses if record else 0 %}
+    {% set total = wins + losses %}
+    {% set rate = record.win_rate if record else 0 %}
+    {% set tcount = record.tournaments|length if record else 0 %}
+
+    <div class="stat-grid">
+      <div class="stat-card win">
+        <div class="stat-num">{{ wins }}</div>
+        <div class="stat-label">Rounds Won</div>
+      </div>
+      <div class="stat-card loss">
+        <div class="stat-num">{{ losses }}</div>
+        <div class="stat-label">Rounds Lost</div>
+      </div>
+      <div class="stat-card rate">
+        <div class="stat-num">{{ rate }}<span class="stat-unit">%</span></div>
+        <div class="stat-label">Win Rate</div>
+      </div>
+      <div class="stat-card tourns">
+        <div class="stat-num">{{ tcount }}</div>
+        <div class="stat-label">Tournaments</div>
+      </div>
+    </div>
+
+    {% if total %}
+    <div class="wl-bar" title="{{ wins }}W / {{ losses }}L">
+      <div class="wl-win" style="width: {{ (100 * wins / total)|round(1) }}%"></div>
+      <div class="wl-loss" style="width: {{ (100 * losses / total)|round(1) }}%"></div>
+    </div>
+    <div class="wl-legend"><span class="wl-dot win"></span>{{ wins }} won <span class="wl-dot loss"></span>{{ losses }} lost</div>
+    {% endif %}
+
+    <!-- Edit panel -->
+    <div id="dashEdit" class="dash-panel" hidden>
+      <h2 class="panel-h2">Update my record</h2>
+      <p class="panel-sub">Paste a Tabroom results link to auto-fill, or enter it yourself.</p>
+      <div class="dash-row">
+        <input id="tabUrl" class="dash-input" placeholder="https://www.tabroom.com/... (optional)"
+               value="{{ record.tabroom_url if record else '' }}">
+        <button class="dash-btn ghost" onclick="dashImport()">Import</button>
+      </div>
+      <div id="importNote" class="dash-note" hidden></div>
+      <div class="dash-row two">
+        <div><label>Rounds won</label><input id="winsIn" class="dash-input" type="number" min="0" value="{{ wins }}"></div>
+        <div><label>Rounds lost</label><input id="lossesIn" class="dash-input" type="number" min="0" value="{{ losses }}"></div>
+      </div>
+      <button class="dash-btn" onclick="dashSave()">Save record</button>
+
+      <h3 class="panel-h3">Add a tournament result</h3>
+      <div class="dash-row two">
+        <div><label>Tournament</label><input id="tName" class="dash-input" placeholder="e.g. State Qualifier"></div>
+        <div><label>Date</label><input id="tDate" class="dash-input" placeholder="e.g. Nov 8"></div>
+      </div>
+      <div class="dash-row three">
+        <div><label>Won</label><input id="tWins" class="dash-input" type="number" min="0" value="0"></div>
+        <div><label>Lost</label><input id="tLosses" class="dash-input" type="number" min="0" value="0"></div>
+        <div><label>Place</label><input id="tPlace" class="dash-input" placeholder="e.g. Quarters"></div>
+      </div>
+      <button class="dash-btn ghost" onclick="dashAddTournament()">Add tournament</button>
+    </div>
+
+    <div class="dash-cols">
+      <!-- Recent tournaments -->
+      <section class="dash-panel">
+        <h2 class="panel-h2">Recent tournaments</h2>
+        {% if record and record.tournaments %}
+          {% for t in record.tournaments %}
+          <div class="tourn-row">
+            <div>
+              <div class="tourn-name">{{ t.name }}</div>
+              <div class="tourn-meta">{{ t.date_str }}{% if t.place %} · {{ t.place }}{% endif %}</div>
+            </div>
+            <div class="tourn-rec">
+              <span class="rec-w">{{ t.wins }}W</span> <span class="rec-l">{{ t.losses }}L</span>
+              <button class="tourn-del" onclick="dashDelTournament({{ t.id }})">&times;</button>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="dash-empty">No tournaments yet. Add one from "Update my record."</div>
+        {% endif %}
+      </section>
+
+      <!-- Leaderboard -->
+      <section class="dash-panel">
+        <h2 class="panel-h2">Team Leaderboard</h2>
+        <p class="panel-sub">Most rounds won.</p>
+        {% if leaderboard %}
+          {% for r in leaderboard %}
+          <div class="lb-row {{ 'top' if loop.index == 1 }}">
+            <div class="lb-rank">{{ loop.index }}</div>
+            <div class="lb-name">{{ r.user.name or r.user.email }}{% if r.user_id == current_user.id %} <span class="lb-you">you</span>{% endif %}</div>
+            <div class="lb-stat">{{ r.wins }}W <span class="lb-rate">· {{ r.win_rate }}%</span></div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="dash-empty">No records yet. Be the first — update your record!</div>
+        {% endif %}
+      </section>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/home.js') }}"></script>
+{% endblock %}

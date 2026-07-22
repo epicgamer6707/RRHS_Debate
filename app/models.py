@@ -108,3 +108,42 @@ class Attachment(db.Model):
     content_type = db.Column(db.String(160), default="")
     size = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# ── Dashboard: debate record + per-tournament results (Tabroom or manual) ──────
+class DebateRecord(db.Model):
+    __tablename__ = "debate_records"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False, index=True)
+    tabroom_url = db.Column(db.String(600), default="")
+    wins = db.Column(db.Integer, default=0)
+    losses = db.Column(db.Integer, default=0)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = db.relationship("User")
+    tournaments = db.relationship(
+        "TournamentResult", backref="record", lazy=True,
+        cascade="all, delete-orphan", order_by="TournamentResult.created_at.desc()",
+    )
+
+    @property
+    def total(self):
+        return self.wins + self.losses
+
+    @property
+    def win_rate(self):
+        return round(100 * self.wins / self.total) if self.total else 0
+
+
+class TournamentResult(db.Model):
+    __tablename__ = "tournament_results"
+
+    id = db.Column(db.Integer, primary_key=True)
+    record_id = db.Column(db.Integer, db.ForeignKey("debate_records.id"), nullable=False, index=True)
+    name = db.Column(db.String(255), nullable=False, default="")
+    date_str = db.Column(db.String(80), default="")
+    wins = db.Column(db.Integer, default=0)
+    losses = db.Column(db.Integer, default=0)
+    place = db.Column(db.String(80), default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
