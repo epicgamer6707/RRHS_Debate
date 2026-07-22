@@ -173,11 +173,12 @@ def fetch_results(cookies_dict):
         return {"authed": False}, None
 
     tournaments = _parse_index(r.text)
+    base_url = r.url  # resolve relative detail links against the real page URL
     for t in tournaments[:15]:
         if not t["link"]:
             continue
         try:
-            detail = s.get(urljoin(_BASE, t["link"]), timeout=25).text
+            detail = s.get(urljoin(base_url, t["link"]), timeout=25).text
         except requests.RequestException:
             continue
         t["wins"], t["losses"] = _count_wl(detail)
@@ -185,6 +186,38 @@ def fetch_results(cookies_dict):
     wins = sum(t["wins"] for t in tournaments)
     losses = sum(t["losses"] for t in tournaments)
     return {"authed": True, "wins": wins, "losses": losses, "tournaments": tournaments}, None
+
+
+def debug_dump(cookies_dict):
+    """TEMPORARY: return what the parser sees, so we can fix W/L extraction against
+    the real (authenticated) markup. Returns a JSON-able dict."""
+    s = _session_from(cookies_dict)
+    out = {"student_url": None, "tournaments": []}
+    try:
+        r = s.get(_STUDENT, timeout=30, allow_redirects=True)
+    except requests.RequestException as e:
+        return {"error": str(e)}
+    out["student_url"] = r.url
+    if "login" in r.url:
+        out["error"] = "session expired"
+        return out
+    ts = _parse_index(r.text)
+    base_url = r.url
+    for t in ts[:2]:
+        info = {"name": t["name"], "link": t["link"], "wl": None,
+                "detail_status": None, "rows_sample": None}
+        if t["link"]:
+            try:
+                dr = s.get(urljoin(base_url, t["link"]), timeout=25)
+                info["detail_status"] = dr.status_code
+                info["resolved_url"] = dr.url
+                info["wl"] = list(_count_wl(dr.text))
+                rows = [" | ".join(c) for _tr, c in _rows(dr.text) if c]
+                info["rows_sample"] = rows[:20]
+            except requests.RequestException as e:
+                info["detail_status"] = f"error: {e}"
+        out["tournaments"].append(info)
+    return out
 
 
 def cookies_to_json(cookies_dict):
