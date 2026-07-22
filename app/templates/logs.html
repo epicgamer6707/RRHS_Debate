@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Logs · RRHS Debate{% endblock %}
+{% block head %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/logs.css') }}">
+{% endblock %}
+{% block body %}
+<div class="logs-page">
+  <header class="logs-nav">
+    <a class="brand brand-link" href="{{ url_for('main.index') }}">
+      <img class="brand-logo" src="{{ url_for('static', filename='img/logo.png') }}" alt="RRHS Debate logo">
+      <div class="brand-name">RRHS <span>Debate</span></div>
+    </a>
+    <a class="btn-inline" href="{{ url_for('main.index') }}">← Home</a>
+  </header>
+
+  <main class="logs-main">
+    <h1 class="logs-h1">Logs</h1>
+    <p class="logs-sub">What's on the list, and everything that's shipped.</p>
+
+    <!-- Shared to-do list -->
+    <section class="logs-todos">
+      <h2 class="logs-h2">To-do</h2>
+      <p class="logs-hint">Anyone can add an item or check one off — checking removes it.</p>
+      <div class="todo-add">
+        <input id="todoInput" class="todo-input" placeholder="Add something to do…"
+               onkeydown="if(event.key==='Enter') todoAdd()">
+        <button class="todo-btn" onclick="todoAdd()">Add</button>
+      </div>
+      <ul id="todoList" class="todo-list">
+        {% for t in todos %}
+        <li class="todo-item" data-id="{{ t.id }}">
+          <button class="todo-check" onclick="todoDone({{ t.id }})" title="Check off">
+            <span class="todo-box"></span>
+          </button>
+          <span class="todo-text">{{ t.text }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      <div id="todoEmpty" class="todo-empty" {% if todos %}hidden{% endif %}>Nothing on the list. Add the first thing.</div>
+    </section>
+
+    <!-- Changelog -->
+    <section class="logs-updates">
+      <h2 class="logs-h2">Updates</h2>
+      {% if changelog_error %}
+        <div class="logs-error">{{ changelog_error }}</div>
+      {% elif not updates %}
+        <div class="logs-empty">No updates yet.</div>
+      {% else %}
+        {% for u in updates %}
+        <div class="update">
+          <div class="update-date">{{ u.date_label }}</div>
+          <ul class="update-items">
+            {% for item in u.lines %}
+            <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endfor %}
+      {% endif %}
+    </section>
+  </main>
+</div>
+<script src="{{ url_for('static', filename='js/logs.js') }}"></script>
+{% endblock %}

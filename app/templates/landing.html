@@ -8,6 +8,7 @@
       <div class="brand-name">RRHS <span>Debate</span></div>
     </a>
     <div class="landing-nav-actions">
+      <a class="btn-inline" href="{{ url_for('logs.logs') }}">Logs</a>
       {% if current_user.is_authenticated %}
         <span class="landing-welcome">Welcome, {{ current_user.name or current_user.email }}</span>
         <a class="btn-inline" href="{{ url_for('auth.logout') }}">Sign out</a>

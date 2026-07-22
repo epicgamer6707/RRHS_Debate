@@ -149,6 +149,15 @@ class TournamentResult(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class TodoItem(db.Model):
+    """Shared public to-do list on the Logs page. Anyone can add/check off."""
+    __tablename__ = "todo_items"
+
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(300), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class TabroomLink(db.Model):
     """A user's linked Tabroom account. We store the login *session* (so we can
     keep reading their results), NOT their Tabroom password — the password is

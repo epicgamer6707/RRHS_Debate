@@ -70,7 +70,8 @@ def dashboard_scraper():
 @bp.route("/dashboard/signup")
 @login_required
 def dashboard_signup():
-    return render_template("dashboard/signup.html", active="signup")
+    # Competition sign-up now lives on the dashboard (below your stats).
+    return redirect(url_for("main.dashboard"))
 
 
 @bp.route("/dashboard/cutter")

@@ -43,7 +43,7 @@ body {
     padding: 16px 18px;
     border-bottom: 1px solid var(--line);
 }
-.sidebar-brand-link { display: flex; align-items: center; gap: 9px; text-decoration: none; min-width: 0; }
+.sidebar-brand-link, .sidebar-brand-link:visited { display: flex; align-items: center; gap: 9px; text-decoration: none; min-width: 0; color: inherit; }
 .sidebar-brand-link:hover { text-decoration: none; }
 .sidebar-toggle {
     background: none; border: none; color: var(--text-lo);
@@ -68,7 +68,7 @@ body {
 }
 .sidebar-brand .brand-icon svg { width: 16px; height: 16px; fill: #fff; }
 .sidebar-brand .brand-logo { width: 32px; height: 32px; border-radius: 7px; object-fit: cover; flex-shrink: 0; }
-.sidebar-brand .brand-name { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; }
+.sidebar-brand .brand-name { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; color: var(--text-hi); }
 .sidebar-brand .brand-name span { color: var(--accent); }
 
 .nav { flex: 1; padding: 10px 8px; display: flex; flex-direction: column; gap: 3px; }

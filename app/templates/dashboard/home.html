@@ -2,6 +2,7 @@
 {% block title %}Dashboard{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/competition.css') }}">
 {% endblock %}
 
 {% block tool %}
@@ -170,10 +171,65 @@
       </section>
     </div>
 
+    {% if connected %}
+    <!-- Competition sign-up (only once Tabroom is linked) -->
+    <section class="dash-panel comp-embed">
+      <h2 class="panel-h2">Sign up for a Competition</h2>
+      <p class="panel-sub">Paste a Tabroom link to fill in the details, or type them in.</p>
+
+      <div class="comp-field">
+        <label>Tabroom link <span class="comp-dim">(optional)</span></label>
+        <div class="comp-fetchrow">
+          <input id="tabroomUrl" class="comp-input"
+                 placeholder="https://www.tabroom.com/index/tourn/index.mhtml?tourn_id=..."
+                 onkeydown="if(event.key==='Enter') fetchTournament()">
+          <button id="fetchBtn" class="comp-btn" onclick="fetchTournament()">Fetch details</button>
+        </div>
+        <div id="fetchError" class="comp-error" hidden></div>
+        <div id="fetchNote" class="comp-fillnote" hidden></div>
+      </div>
+
+      <div class="comp-field">
+        <label>Tournament name</label>
+        <input id="mName" class="comp-input" placeholder="Tournament name">
+      </div>
+      <div class="comp-field">
+        <label>Dates</label>
+        <input id="mDate" class="comp-input" placeholder="e.g. Nov 8 to Nov 10 2026">
+      </div>
+      <div class="comp-field">
+        <label>Location <span class="comp-dim">(optional)</span></label>
+        <input id="mLoc" class="comp-input" placeholder="City, State">
+      </div>
+      <div class="comp-field comp-event">
+        <label>Which event are you entering?</label>
+        <select id="eventSel" class="comp-input">
+          <option value="Policy (CX)">Policy (CX)</option>
+          <option value="Lincoln-Douglas (LD)">Lincoln-Douglas (LD)</option>
+          <option value="Public Forum (PF)">Public Forum (PF)</option>
+          <option value="Congress">Congress</option>
+          <option value="World Schools">World Schools</option>
+          <option value="Big Questions">Big Questions</option>
+          <option value="Extemp (US/International)">Extemp (US/International)</option>
+          <option value="Original Oratory">Original Oratory</option>
+          <option value="Informative Speaking">Informative Speaking</option>
+          <option value="Dramatic Interp">Dramatic Interp</option>
+          <option value="Humorous Interp">Humorous Interp</option>
+          <option value="Duo Interp">Duo Interp</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <button id="sendBtn" class="comp-btn comp-btn-wide" onclick="sendSignup()">Send to officers</button>
+      <div id="sendNote" class="comp-note" hidden></div>
+    </section>
+    {% endif %}
+
   </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+{% if connected %}<script src="{{ url_for('static', filename='js/competition.js') }}"></script>{% endif %}
 {% endblock %}
