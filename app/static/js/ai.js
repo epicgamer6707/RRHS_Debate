@@ -5,9 +5,9 @@
 // Pinned, exact version from jsDelivr so the third-party code can never change
 // underneath us. Bump deliberately if upgrading.
 const WEBLLM_URL = "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.79/+esm";
-// 3B model: strong enough to actually explain/evaluate arguments while staying
-// runnable in-browser. First load caches it; later loads are instant.
-const MODEL_ID = "Llama-3.2-3B-Instruct-q4f16_1-MLC";
+// 1B model: small download (~0.8GB) and fast on a school laptop. Plenty for
+// turning requests into search keywords and explaining evidence.
+const MODEL_ID = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
 
 let _enginePromise = null;
 let _statusEls = [];

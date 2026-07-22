@@ -56,11 +56,14 @@ async function aiAssistSearch() {
     statusEl.textContent = "Thinking…";
     try {
         const keywords = await window.RRHSAI.ask(
-            `Convert this request into short search keywords (3-6 words, no punctuation, ` +
-            `no explanation) for a debate evidence search engine.\nRequest: ${request}`,
-            "Reply with ONLY the keywords, nothing else."
+            `Turn this debate research request into 2-5 short search keywords for an ` +
+            `evidence search engine. Keep debate shorthand (e.g. "AT" = answers-to, ` +
+            `"K" = kritik, "CP" = counterplan, "DA" = disadvantage, "PIC"). No ` +
+            `punctuation, no quotes, no explanation.\nRequest: ${request}`,
+            "You are a policy debate research assistant. Reply with ONLY the keywords."
         );
-        input.value = keywords.trim().replace(/^"|"$/g, "").split("\n")[0];
+        const cleaned = keywords.trim().replace(/["'.]/g, "").split("\n")[0].slice(0, 80);
+        if (cleaned) input.value = cleaned;
         statusEl.textContent = "";
         runSearch();
     } catch (e) {
