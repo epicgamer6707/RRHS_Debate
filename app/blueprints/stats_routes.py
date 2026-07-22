@@ -3,8 +3,9 @@ from flask import Blueprint, request, jsonify, abort
 from flask_login import login_required, current_user
 
 from ..extensions import db
-from ..models import DebateRecord, TournamentResult
+from ..models import DebateRecord, TournamentResult, TabroomLink
 from ..tabroom_results import scrape_record
+from ..tabroom_auth import login as tabroom_login, fetch_results, cookies_to_json, cookies_from_json
 
 bp = Blueprint("stats", __name__, url_prefix="/stats")
 
@@ -129,13 +130,84 @@ def connect_tabroom():
 @bp.route("/refresh", methods=["POST"])
 @login_required
 def refresh_tabroom():
-    """Re-read the saved Tabroom link and update the record."""
+    """Re-read stats. Prefer a confirmed signed-in Tabroom session; otherwise fall
+    back to the saved public results link."""
+    link = TabroomLink.query.filter_by(user_id=current_user.id, confirmed=True).first()
+    if link and link.session_json:
+        result, err = fetch_results(cookies_from_json(link.session_json))
+        if err:
+            return jsonify({"ok": False, "error": err}), 400
+        if not result.get("authed"):
+            link.confirmed = False
+            link.last_error = "Your Tabroom session expired — sign in again to reconnect."
+            db.session.commit()
+            return jsonify({"ok": False, "error": link.last_error, "reconnect": True}), 400
+        rec = _record_for(current_user, create=True)
+        _apply_scrape(rec, rec.tabroom_url or "", {
+            "name": (link.person_name or "Tabroom") + " — season", "ok": True,
+            "wins": result.get("wins", 0), "losses": result.get("losses", 0), "place": "",
+        })
+        db.session.commit()
+        return jsonify({"ok": True, "wins": rec.wins, "losses": rec.losses})
+
     rec = _record_for(current_user)
     if rec is None or not rec.tabroom_url:
-        return jsonify({"ok": False, "error": "Connect your Tabroom link first."}), 400
+        return jsonify({"ok": False, "error": "Connect your Tabroom first."}), 400
     result = scrape_record(rec.tabroom_url)
     if not result.get("ok"):
         return jsonify(result), 400
     _apply_scrape(rec, rec.tabroom_url, result)
     db.session.commit()
     return jsonify({"ok": True, "wins": rec.wins, "losses": rec.losses})
+
+
+# ── Sign in to Tabroom (password used once, never stored) ──────────────────────
+@bp.route("/tabroom/login", methods=["POST"])
+@login_required
+def tabroom_signin():
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip()
+    password = data.get("password") or ""
+    cookies, identity, err = tabroom_login(email, password)
+    del password
+    if err:
+        return jsonify({"ok": False, "error": err}), 400
+
+    # Persist the session (not the password), unconfirmed, pending "is this you?".
+    link = TabroomLink.query.filter_by(user_id=current_user.id).first()
+    if link is None:
+        link = TabroomLink(user_id=current_user.id)
+        db.session.add(link)
+    link.person_name = (identity or {}).get("name", "") or ""
+    link.school = (identity or {}).get("school", "") or ""
+    link.session_json = cookies_to_json(cookies)
+    link.confirmed = False
+    link.last_error = ""
+    db.session.commit()
+    return jsonify({"ok": True, "name": link.person_name or email,
+                    "school": link.school})
+
+
+@bp.route("/tabroom/confirm", methods=["POST"])
+@login_required
+def tabroom_confirm():
+    """The 'is this you?' answer. Yes → link it and pull stats; No → discard."""
+    yes = bool((request.get_json(silent=True) or {}).get("confirm"))
+    link = TabroomLink.query.filter_by(user_id=current_user.id).first()
+    if link is None:
+        return jsonify({"ok": False, "error": "Sign in first."}), 400
+    if not yes:
+        db.session.delete(link)
+        db.session.commit()
+        return jsonify({"ok": True, "linked": False})
+
+    link.confirmed = True
+    result, err = fetch_results(cookies_from_json(link.session_json))
+    if not err and result and result.get("authed"):
+        rec = _record_for(current_user, create=True)
+        _apply_scrape(rec, rec.tabroom_url or "", {
+            "name": (link.person_name or "Tabroom") + " — season", "ok": True,
+            "wins": result.get("wins", 0), "losses": result.get("losses", 0), "place": "",
+        })
+    db.session.commit()
+    return jsonify({"ok": True, "linked": True})

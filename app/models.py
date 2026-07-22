@@ -147,3 +147,23 @@ class TournamentResult(db.Model):
     losses = db.Column(db.Integer, default=0)
     place = db.Column(db.String(80), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class TabroomLink(db.Model):
+    """A user's linked Tabroom account. We store the login *session* (so we can
+    keep reading their results), NOT their Tabroom password — the password is
+    used once to sign in and immediately discarded. `confirmed` gates the
+    "is this you?" step. If Tabroom expires the session, we clear it and ask the
+    user to reconnect."""
+    __tablename__ = "tabroom_links"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False, index=True)
+    person_name = db.Column(db.String(200), default="")
+    school = db.Column(db.String(200), default="")
+    session_json = db.Column(db.Text, default="")   # Tabroom cookies (jar), not the password
+    confirmed = db.Column(db.Boolean, default=False)
+    last_error = db.Column(db.String(300), default="")
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = db.relationship("User")

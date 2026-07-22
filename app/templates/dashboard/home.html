@@ -15,9 +15,11 @@
         <p class="dash-sub">Here's how the season's going.</p>
       </div>
       <div class="dash-hero-actions">
-        {% if record and record.tabroom_url %}
-        <span class="tab-connected" title="{{ record.tabroom_url }}">
-          <span class="tab-dot"></span> Tabroom connected
+        {% set connected = tabroom_link or (record and record.tabroom_url) %}
+        {% if connected %}
+        <span class="tab-connected" title="{{ tabroom_link.person_name if tabroom_link else record.tabroom_url }}">
+          <span class="tab-dot"></span>
+          {% if tabroom_link and tabroom_link.person_name %}{{ tabroom_link.person_name }} · Tabroom{% else %}Tabroom connected{% endif %}
         </span>
         <button class="dash-editbtn ghost" id="refreshBtn" onclick="dashRefresh()">Refresh stats</button>
         {% endif %}
@@ -25,24 +27,67 @@
       </div>
     </header>
 
-    {% if not record or not record.tabroom_url %}
-    <!-- First-run: connect Tabroom once, keep stats forever -->
+    {% if not connected %}
+    <!-- First-run: sign in to Tabroom once, then it stays linked -->
     <div class="tab-connect" id="tabConnect">
       <div class="tab-connect-icon">📊</div>
       <div class="tab-connect-body">
-        <h2 class="tab-connect-h">Connect your Tabroom to track your stats</h2>
-        <p class="tab-connect-p">
-          Paste a link to your <strong>public Tabroom results</strong> (open a tournament on
-          tabroom.com, click <em>Record</em>, and copy the address). We'll pull your win-loss
-          record and keep it on your dashboard — refresh it anytime.
-          <span class="tab-connect-safe">🔒 No password needed — we only read public results.</span>
-        </p>
-        <div class="dash-row">
-          <input id="connectUrl" class="dash-input" placeholder="https://www.tabroom.com/index/tourn/postings/...">
-          <button class="dash-btn" id="connectBtn" onclick="dashConnect()">Connect</button>
+        <h2 class="tab-connect-h">Sign in to Tabroom to track your stats</h2>
+
+        <!-- Step 1: credentials -->
+        <div id="tabStep1">
+          <p class="tab-connect-p">
+            Sign in with your Tabroom account and we'll pull your win-loss record onto your
+            dashboard and keep it linked.
+            <span class="tab-connect-safe">🔒 Your password is used once to sign in and never stored — we only keep the session so your stats stay updated.</span>
+          </p>
+          <div class="dash-row two">
+            <input id="tabEmail" class="dash-input" type="email" placeholder="Tabroom email"
+                   autocomplete="off">
+            <input id="tabPass" class="dash-input" type="password" placeholder="Tabroom password"
+                   autocomplete="off" onkeydown="if(event.key==='Enter') dashTabLogin()">
+          </div>
+          <div class="dash-row">
+            <button class="dash-btn" id="tabLoginBtn" onclick="dashTabLogin()">Sign in to Tabroom</button>
+          </div>
+          <div id="tabNote" class="dash-note" hidden></div>
+          <button class="tab-connect-skip" onclick="dashUsePublic()">use a public results link instead</button>
+          &nbsp;·&nbsp;
+          <button class="tab-connect-skip" onclick="dashToggleEdit()">enter my record manually</button>
         </div>
-        <div id="connectNote" class="dash-note" hidden></div>
-        <button class="tab-connect-skip" onclick="dashToggleEdit()">or enter my record manually</button>
+
+        <!-- Step 2: is this you? -->
+        <div id="tabStep2" hidden>
+          <p class="tab-connect-p">We found this Tabroom account:</p>
+          <div class="tab-whois">
+            <div class="tab-whois-avatar" id="tabAvatar">?</div>
+            <div>
+              <div class="tab-whois-name" id="tabWhoName">—</div>
+              <div class="tab-whois-school" id="tabWhoSchool"></div>
+            </div>
+          </div>
+          <p class="tab-connect-p"><strong>Is this you?</strong></p>
+          <div class="dash-row">
+            <button class="dash-btn" id="tabYesBtn" onclick="dashTabConfirm(true)">Yes, that's me — link it</button>
+            <button class="dash-btn ghost" onclick="dashTabConfirm(false)">No</button>
+          </div>
+          <div id="tabNote2" class="dash-note" hidden></div>
+        </div>
+
+        <!-- Public-link fallback -->
+        <div id="tabPublic" hidden>
+          <p class="tab-connect-p">
+            Paste a link to your <strong>public Tabroom results</strong> (open a tournament,
+            click <em>Record</em>, copy the address).
+            <span class="tab-connect-safe">🔒 No password needed.</span>
+          </p>
+          <div class="dash-row">
+            <input id="connectUrl" class="dash-input" placeholder="https://www.tabroom.com/index/tourn/postings/...">
+            <button class="dash-btn" id="connectBtn" onclick="dashConnect()">Connect</button>
+          </div>
+          <div id="connectNote" class="dash-note" hidden></div>
+          <button class="tab-connect-skip" onclick="dashUseSignin()">← back to sign in</button>
+        </div>
       </div>
     </div>
     {% endif %}

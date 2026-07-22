@@ -7,7 +7,7 @@ from flask import Blueprint, render_template, redirect, url_for
 from flask_login import login_required, current_user
 
 from ..extensions import db
-from ..models import SavedCard, DebateRecord, User
+from ..models import SavedCard, DebateRecord, User, TabroomLink
 
 bp = Blueprint("main", __name__)
 
@@ -34,6 +34,7 @@ def healthz():
 @login_required
 def dashboard():
     record = DebateRecord.query.filter_by(user_id=current_user.id).first()
+    tabroom_link = TabroomLink.query.filter_by(user_id=current_user.id, confirmed=True).first()
     leaderboard = (
         db.session.query(DebateRecord)
         .join(User, DebateRecord.user_id == User.id)
@@ -43,7 +44,8 @@ def dashboard():
         .all()
     )
     return render_template(
-        "dashboard/home.html", active="home", record=record, leaderboard=leaderboard,
+        "dashboard/home.html", active="home", record=record,
+        leaderboard=leaderboard, tabroom_link=tabroom_link,
     )
 
 
