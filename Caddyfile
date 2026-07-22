@@ -1,0 +1,5 @@
+# Caddy gets a free HTTPS certificate automatically for your domain and forwards
+# traffic to the app. It also sets X-Forwarded-Proto so Google sign-in works.
+{$DOMAIN} {
+    reverse_proxy web:8080
+}

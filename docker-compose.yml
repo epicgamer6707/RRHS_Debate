@@ -1,0 +1,53 @@
+# Runs the whole app on one server (Oracle Cloud "Always Free" VM, or any host
+# with Docker): the Flask app, its Postgres database, and Caddy for automatic
+# HTTPS. Deploy with:  docker compose up -d --build
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rrhs
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: rrhs
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+
+  web:
+    build: .
+    restart: unless-stopped
+    shm_size: "1gb"           # Chromium needs a big /dev/shm
+    depends_on:
+      - db
+    environment:
+      PORT: "8080"
+      DATABASE_URL: postgresql://rrhs:${DB_PASSWORD}@db:5432/rrhs
+      SECRET_KEY: ${SECRET_KEY}
+      OFFICER_EMAILS: ${OFFICER_EMAILS}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      MAIL_FROM: ${MAIL_FROM}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
+      SUPABASE_BUCKET: ${SUPABASE_BUCKET}
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddydata:/data
+      - caddyconfig:/config
+
+volumes:
+  dbdata:
+  caddydata:
+  caddyconfig:
