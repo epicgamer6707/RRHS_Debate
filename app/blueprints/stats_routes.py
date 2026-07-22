@@ -6,7 +6,7 @@ from ..extensions import db
 from ..models import DebateRecord, TournamentResult, TabroomLink
 from ..tabroom_results import scrape_record
 from ..tabroom_auth import (
-    login as tabroom_login, fetch_results, cookies_to_json, cookies_from_json, debug_dump,
+    login as tabroom_login, fetch_results, cookies_to_json, cookies_from_json,
 )
 
 bp = Blueprint("stats", __name__, url_prefix="/stats")
@@ -201,16 +201,6 @@ def tabroom_signin():
     db.session.commit()
     return jsonify({"ok": True, "name": link.person_name or email,
                     "school": link.school})
-
-
-@bp.route("/tabroom/debug")
-@login_required
-def tabroom_debug():
-    """TEMPORARY: visit in a browser to see what the parser reads from Tabroom."""
-    link = TabroomLink.query.filter_by(user_id=current_user.id, confirmed=True).first()
-    if link is None or not link.session_json:
-        return jsonify({"error": "Connect Tabroom first."}), 400
-    return jsonify(debug_dump(cookies_from_json(link.session_json)))
 
 
 @bp.route("/tabroom/confirm", methods=["POST"])

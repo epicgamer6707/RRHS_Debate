@@ -121,13 +121,12 @@ def _rows(html):
 
 def _pick_result_link(links):
     """From all hrefs in a tournament row, choose the competitor round-results
-    link, not the tournament homepage."""
+    link (student history page), not the tournament homepage."""
     for href in links:
-        if re.search(r"entry_id=|results/|round_results|entry_record|student/result",
+        if re.search(r"history\.mhtml|student_id=|entry_id=|round_results|entry_record",
                      href, re.I):
             return href
-    # fall back to any link that isn't the plain tournament index page
-    for href in links:
+    for href in links:  # anything but the plain tournament index page
         if "tourn/index.mhtml" not in href:
             return href
     return links[0] if links else ""
@@ -148,8 +147,7 @@ def _parse_index(html):
         division = next((c for c in cells if _DIVISION.search(c)), "")[:120]
         links = re.findall(r'href\s*=\s*"([^"]+)"', tr)
         out.append({"name": name, "date": date[:80], "division": division,
-                    "link": _pick_result_link(links), "links": links,
-                    "wins": 0, "losses": 0})
+                    "link": _pick_result_link(links), "wins": 0, "losses": 0})
     return out
 
 
@@ -201,38 +199,6 @@ def fetch_results(cookies_dict):
     wins = sum(t["wins"] for t in tournaments)
     losses = sum(t["losses"] for t in tournaments)
     return {"authed": True, "wins": wins, "losses": losses, "tournaments": tournaments}, None
-
-
-def debug_dump(cookies_dict):
-    """TEMPORARY: return what the parser sees, so we can fix W/L extraction against
-    the real (authenticated) markup. Returns a JSON-able dict."""
-    s = _session_from(cookies_dict)
-    out = {"student_url": None, "tournaments": []}
-    try:
-        r = s.get(_STUDENT, timeout=30, allow_redirects=True)
-    except requests.RequestException as e:
-        return {"error": str(e)}
-    out["student_url"] = r.url
-    if "login" in r.url:
-        out["error"] = "session expired"
-        return out
-    ts = _parse_index(r.text)
-    base_url = r.url
-    for t in ts[:2]:
-        info = {"name": t["name"], "link": t["link"], "all_links": t.get("links"),
-                "wl": None, "detail_status": None, "rows_sample": None}
-        if t["link"]:
-            try:
-                dr = s.get(urljoin(base_url, t["link"]), timeout=25)
-                info["detail_status"] = dr.status_code
-                info["resolved_url"] = dr.url
-                info["wl"] = list(_count_wl(dr.text))
-                rows = [" | ".join(c) for _tr, c in _rows(dr.text) if c]
-                info["rows_sample"] = rows[:20]
-            except requests.RequestException as e:
-                info["detail_status"] = f"error: {e}"
-        out["tournaments"].append(info)
-    return out
 
 
 def cookies_to_json(cookies_dict):
