@@ -122,15 +122,19 @@ async function analyzeWithAI() {
             `and note any gaps.`;
     }
 
+    out.hidden = false;
+    out.textContent = "";
     try {
-        const answer = await window.RRHSAI.ask(prompt,
-            "You are a concise, accurate debate coach. Use short paragraphs, no markdown symbols.");
-        out.textContent = answer;
-        out.hidden = false;
+        await window.RRHSAI.ask(
+            prompt,
+            "You are a concise, accurate debate coach. Use short paragraphs, no markdown symbols.",
+            partial => { out.textContent = partial; }  // stream in live
+        );
         statusEl.textContent = "";
     } catch (e) {
         const msg = e.message || "AI analysis failed.";
         statusEl.textContent = msg;
+        out.hidden = true;
         alert("AI: " + msg);
     }
 }

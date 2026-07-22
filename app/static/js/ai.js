@@ -56,7 +56,8 @@ async function _getEngine() {
 window.RRHSAI = {
     supported() { return typeof navigator !== "undefined" && !!navigator.gpu; },
     bindStatus(el) { if (el && !_statusEls.includes(el)) _statusEls.push(el); },
-    async ask(prompt, system) {
+    // onToken(partialText) is called as tokens stream in (optional).
+    async ask(prompt, system, onToken) {
         if (!this.supported()) {
             throw new Error("In-browser AI needs WebGPU — use Chrome or Edge on a computer (not a phone or Safari).");
         }
@@ -64,7 +65,26 @@ window.RRHSAI = {
         const messages = [];
         if (system) messages.push({ role: "system", content: system });
         messages.push({ role: "user", content: prompt });
-        const reply = await engine.chat.completions.create({ messages, temperature: 0.4 });
-        return reply.choices[0].message.content;
+
+        let full = "";
+        try {
+            const chunks = await engine.chat.completions.create({
+                messages, temperature: 0.4, stream: true,
+            });
+            for await (const chunk of chunks) {
+                const delta = (chunk.choices && chunk.choices[0] && chunk.choices[0].delta
+                    && chunk.choices[0].delta.content) || "";
+                if (delta) { full += delta; if (onToken) onToken(full); }
+            }
+        } catch (streamErr) {
+            // Some setups don't support streaming — fall back to one-shot.
+            const reply = await engine.chat.completions.create({ messages, temperature: 0.4 });
+            full = (reply.choices && reply.choices[0] && reply.choices[0].message
+                && reply.choices[0].message.content) || "";
+            if (full && onToken) onToken(full);
+        }
+        full = (full || "").trim();
+        if (!full) throw new Error("The model finished but returned no text. Try again.");
+        return full;
     },
 };
