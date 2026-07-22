@@ -18,6 +18,18 @@ def index():
     return render_template("landing.html")
 
 
+@bp.route("/healthz")
+def healthz():
+    # Pinged by an uptime bot every few minutes: keeps the free host awake AND
+    # touches Postgres so Supabase's free DB doesn't pause from inactivity.
+    from sqlalchemy import text
+    try:
+        db.session.execute(text("SELECT 1"))
+        return "ok", 200
+    except Exception:
+        return "db-error", 500
+
+
 @bp.route("/dashboard")
 @login_required
 def dashboard():
