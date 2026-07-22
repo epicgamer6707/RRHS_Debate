@@ -49,6 +49,11 @@ class Config:
         e.strip().lower() for e in os.environ.get("OFFICER_EMAILS", "").split(",") if e.strip()
     ]
 
+    # AI (Groq — free, no credit card). Powers Card Analyzer + the Bot.
+    GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "").strip()
+    AI_MODEL = os.environ.get("AI_MODEL", "openai/gpt-oss-120b").strip()
+    AI_ENABLED = bool(GROQ_API_KEY)
+
     # Supabase Storage for Classwork documents. Uses the service_role key (never
     # exposed to the browser) so the bucket can stay private; downloads go out
     # through short-lived signed URLs generated per request.

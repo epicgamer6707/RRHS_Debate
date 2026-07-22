@@ -46,3 +46,34 @@ def cut():
 
     result = cut_card(meta, query)
     return jsonify(result), (200 if result.get("ok") else 400)
+
+
+@bp.route("/extract", methods=["POST"])
+@login_required
+def extract():
+    """Return the plain text of a source (for the Analyzer / Bot)."""
+    upload = request.files.get("file")
+    url = (request.form.get("url") or "").strip()
+    pasted = (request.form.get("text") or "").strip()
+    try:
+        if upload and upload.filename:
+            raw = upload.read(_MAX_FILE + 1)
+            if len(raw) > _MAX_FILE:
+                return jsonify({"ok": False, "error": "File is too large (8 MB max)."}), 400
+            text = extract_from_file(upload.filename, raw)
+        elif url:
+            meta = extract_from_url(url)
+            text = (meta or {}).get("text", "") if meta else ""
+            if not text:
+                return jsonify({"ok": False, "error": "Couldn't read that URL. Paste the text instead."}), 400
+        elif pasted:
+            text = pasted
+        else:
+            return jsonify({"ok": False, "error": "Add a URL, paste text, or upload a file."}), 400
+    except Exception as e:  # noqa: BLE001
+        return jsonify({"ok": False, "error": f"Couldn't read that source: {e}"}), 400
+
+    text = (text or "").strip()
+    if not text:
+        return jsonify({"ok": False, "error": "No readable text found."}), 400
+    return jsonify({"ok": True, "text": text[:12000]})

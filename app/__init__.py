@@ -60,6 +60,7 @@ def create_app(config_object=Config):
     from .blueprints.citation_routes import bp as citation_bp
     from .blueprints.classroom_routes import bp as classroom_bp
     from .blueprints.stats_routes import bp as stats_bp
+    from .blueprints.ai_routes import bp as ai_bp
     from .auth.routes import bp as auth_bp
     app.register_blueprint(scraper_bp)
     app.register_blueprint(main_bp)
@@ -69,6 +70,7 @@ def create_app(config_object=Config):
     app.register_blueprint(citation_bp)
     app.register_blueprint(classroom_bp)
     app.register_blueprint(stats_bp)
+    app.register_blueprint(ai_bp)
     app.register_blueprint(auth_bp)
 
     # Create tables on first boot (fine for now; we'll switch to migrations later).

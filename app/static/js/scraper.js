@@ -43,7 +43,11 @@ function setHL(mode) {
     applyFormat();
 }
 
-// ── AI-assisted search (runs in the visitor's browser, no server cost) ─────────
+// ── AI-assisted search (server-side model, works on every device) ──────────────
+function _aiCsrf() {
+    const m = document.querySelector('meta[name="csrf-token"]');
+    return m ? m.getAttribute("content") : "";
+}
 async function aiAssistSearch() {
     const input = document.getElementById("query");
     const statusEl = document.getElementById("aiSearchStatus");
@@ -51,25 +55,21 @@ async function aiAssistSearch() {
     const request = input.value.trim();
     if (!request) return;
 
-    window.RRHSAI.bindStatus(statusEl);
     btn.disabled = true;
     statusEl.textContent = "Thinking…";
     try {
-        const keywords = await window.RRHSAI.ask(
-            `Turn this debate research request into 2-5 short search keywords for an ` +
-            `evidence search engine. Keep debate shorthand (e.g. "AT" = answers-to, ` +
-            `"K" = kritik, "CP" = counterplan, "DA" = disadvantage, "PIC"). No ` +
-            `punctuation, no quotes, no explanation.\nRequest: ${request}`,
-            "You are a policy debate research assistant. Reply with ONLY the keywords."
-        );
-        const cleaned = keywords.trim().replace(/["'.]/g, "").split("\n")[0].slice(0, 80);
-        if (cleaned) input.value = cleaned;
+        const r = await fetch("/ai/keywords", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRFToken": _aiCsrf() },
+            body: JSON.stringify({ request }),
+        });
+        const d = await r.json();
+        if (!d.ok) { statusEl.textContent = d.error || "AI failed."; alert("AI: " + (d.error || "failed")); return; }
+        if (d.keywords) input.value = d.keywords;
         statusEl.textContent = "";
         runSearch();
     } catch (e) {
-        const msg = e.message || "AI search assist failed.";
-        statusEl.textContent = msg;
-        alert("AI: " + msg);
+        statusEl.textContent = "AI request failed.";
     } finally {
         btn.disabled = false;
     }
