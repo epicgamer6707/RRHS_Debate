@@ -72,9 +72,13 @@ def create_app(config_object=Config):
     app.register_blueprint(auth_bp)
 
     # Create tables on first boot (fine for now; we'll switch to migrations later).
+    # Wrapped so a temporary DB outage doesn't crash the whole app on startup —
+    # the container still boots and logs the error instead of failing the deploy.
     with app.app_context():
-        # Import models so SQLAlchemy knows about the tables before create_all.
-        from . import models  # noqa: F401
-        db.create_all()
+        from . import models  # noqa: F401  (register models before create_all)
+        try:
+            db.create_all()
+        except Exception as e:  # noqa: BLE001
+            app.logger.error("[db] create_all failed on boot (check DATABASE_URL): %s", e)
 
     return app

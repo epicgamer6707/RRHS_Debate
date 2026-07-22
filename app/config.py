@@ -16,6 +16,9 @@ def _database_url():
     # Railway/Heroku hand out "postgres://" but SQLAlchemy wants "postgresql://".
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
+    # Supabase requires SSL; add it if the URL doesn't already specify it.
+    if "supabase.com" in url and "sslmode=" not in url:
+        url += ("&" if "?" in url else "?") + "sslmode=require"
     return url
 
 
