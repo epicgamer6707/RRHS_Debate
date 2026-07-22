@@ -119,6 +119,20 @@ def _rows(html):
         yield tr, [_text(c) for c in cells]
 
 
+def _pick_result_link(links):
+    """From all hrefs in a tournament row, choose the competitor round-results
+    link, not the tournament homepage."""
+    for href in links:
+        if re.search(r"entry_id=|results/|round_results|entry_record|student/result",
+                     href, re.I):
+            return href
+    # fall back to any link that isn't the plain tournament index page
+    for href in links:
+        if "tourn/index.mhtml" not in href:
+            return href
+    return links[0] if links else ""
+
+
 def _parse_index(html):
     """Tournaments from the 'History at …' table: name, date, division, detail link."""
     i = html.find("History at")
@@ -132,9 +146,10 @@ def _parse_index(html):
             continue  # header or non-tournament row
         name = cells[0][:255]
         division = next((c for c in cells if _DIVISION.search(c)), "")[:120]
-        m = re.search(r'href\s*=\s*"([^"]+)"', tr)
+        links = re.findall(r'href\s*=\s*"([^"]+)"', tr)
         out.append({"name": name, "date": date[:80], "division": division,
-                    "link": m.group(1) if m else "", "wins": 0, "losses": 0})
+                    "link": _pick_result_link(links), "links": links,
+                    "wins": 0, "losses": 0})
     return out
 
 
@@ -204,8 +219,8 @@ def debug_dump(cookies_dict):
     ts = _parse_index(r.text)
     base_url = r.url
     for t in ts[:2]:
-        info = {"name": t["name"], "link": t["link"], "wl": None,
-                "detail_status": None, "rows_sample": None}
+        info = {"name": t["name"], "link": t["link"], "all_links": t.get("links"),
+                "wl": None, "detail_status": None, "rows_sample": None}
         if t["link"]:
             try:
                 dr = s.get(urljoin(base_url, t["link"]), timeout=25)
