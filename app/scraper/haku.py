@@ -153,7 +153,7 @@ def _scrape_worker():
     try:
         print("[pw] scrape worker starting...", flush=True)
         with sync_playwright() as pw:
-            browser = pw.chromium.launch(headless=True)
+            browser = pw.chromium.launch(headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
             ctx = browser.new_context(
                 permissions=["clipboard-read", "clipboard-write"],
                 user_agent=_UA,
@@ -226,7 +226,7 @@ def _fetch_worker():
     try:
         print("[pw] fetch worker starting...", flush=True)
         with sync_playwright() as pw:
-            browser = pw.chromium.launch(headless=True)
+            browser = pw.chromium.launch(headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
             print("[pw] fetch worker ready.", flush=True)
             while True:
                 job = _fetch_queue.get()
