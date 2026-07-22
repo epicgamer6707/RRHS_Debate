@@ -1,0 +1,35 @@
+# Render blueprint. On Render: New -> Blueprint -> pick this repo, and it
+# pre-creates the service from here. Secrets marked "sync: false" are entered in
+# the Render dashboard (never committed). Render sets $PORT automatically and the
+# app binds it; the Dockerfile builds the image.
+services:
+  - type: web
+    name: rrhs-debate
+    runtime: docker
+    plan: free
+    branch: main
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true          # Render generates a strong random value
+      - key: MAIL_FROM
+        value: RRHS Debate <onboarding@resend.dev>
+      - key: SUPABASE_BUCKET
+        value: classroom-files
+      - key: DATABASE_URL             # Supabase "Session pooler" URI
+        sync: false
+      - key: OFFICER_EMAILS
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SLACK_WEBHOOK_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
