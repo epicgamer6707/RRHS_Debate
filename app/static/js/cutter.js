@@ -129,6 +129,8 @@ async function analyzeWithAI() {
         out.hidden = false;
         statusEl.textContent = "";
     } catch (e) {
-        statusEl.textContent = e.message || "AI analysis failed.";
+        const msg = e.message || "AI analysis failed.";
+        statusEl.textContent = msg;
+        alert("AI: " + msg);
     }
 }

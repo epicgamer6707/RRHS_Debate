@@ -67,7 +67,9 @@ async function aiAssistSearch() {
         statusEl.textContent = "";
         runSearch();
     } catch (e) {
-        statusEl.textContent = e.message || "AI search assist failed.";
+        const msg = e.message || "AI search assist failed.";
+        statusEl.textContent = msg;
+        alert("AI: " + msg);
     } finally {
         btn.disabled = false;
     }
