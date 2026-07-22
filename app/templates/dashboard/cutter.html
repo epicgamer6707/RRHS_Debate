@@ -1,5 +1,5 @@
 {% extends "dashboard/layout.html" %}
-{% block title %}Card Analyzer{% endblock %}
+{% block title %}Source Analyzer{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cutter.css') }}">
 {% endblock %}
@@ -7,18 +7,18 @@
 {% block tool %}
 <div class="an-wrap">
   <div class="an-inner">
-    <h1 class="an-h1">Card Analyzer</h1>
-    <p class="an-sub">Load a card, then <strong>Analyze</strong> it against your idea, or open the <strong>Bot</strong> to ask anything about it.</p>
+    <h1 class="an-h1">Source Analyzer</h1>
+    <p class="an-sub">Load a source, then <strong>Analyze</strong> it against your idea, or open the <strong>Bot</strong> to ask anything about it.</p>
 
     <!-- Source loader -->
     <div class="an-source">
       <div class="an-modes">
-        <button class="an-mode active" data-m="text" onclick="anMode('text')">Paste text</button>
-        <button class="an-mode" data-m="url" onclick="anMode('url')">Link</button>
+        <button class="an-mode active" data-m="url" onclick="anMode('url')">Link</button>
+        <button class="an-mode" data-m="text" onclick="anMode('text')">Paste text</button>
         <button class="an-mode" data-m="file" onclick="anMode('file')">Upload file</button>
       </div>
-      <textarea id="srcText" class="an-input an-textarea" placeholder="Paste the card or article text here"></textarea>
-      <input id="srcUrl" class="an-input" hidden placeholder="https://article-url.com/...">
+      <input id="srcUrl" class="an-input" placeholder="https://article-url.com/...">
+      <textarea id="srcText" class="an-input an-textarea" hidden placeholder="Paste the card or article text here"></textarea>
       <div id="srcFileWrap" hidden><input id="srcFile" type="file" accept=".pdf,.docx,.txt"></div>
       <div class="an-source-row">
         <button class="an-btn" id="loadBtn" onclick="anLoad()">Load card</button>

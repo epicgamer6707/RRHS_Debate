@@ -28,10 +28,10 @@ def analyze():
     idea = (data.get("idea") or "").strip()
     if not text:
         return jsonify({"ok": False, "error": "Nothing to analyze."}), 400
-    segments, err = analyze_segments(text, idea)
+    result, err = analyze_segments(text, idea)
     if err:
         return jsonify({"ok": False, "error": err}), 400
-    return jsonify({"ok": True, "segments": segments})
+    return jsonify({"ok": True, "tagline": result["tagline"], "segments": result["segments"]})
 
 
 @bp.route("/keywords", methods=["POST"])
@@ -41,16 +41,23 @@ def keywords():
     if not req:
         return jsonify({"ok": False, "error": "Type what you're looking for."}), 400
     text, err = ask(
-        f"Turn this debate research request into 2-5 short search keywords for an evidence "
-        f"search engine. Keep debate shorthand meaning (AT=answers-to, K=kritik, CP=counterplan, "
-        f"DA=disadvantage). Reply with ONLY the keywords, no quotes or punctuation.\n"
-        f"Request: {req}",
-        system="You are a policy debate research assistant.",
-        max_tokens=30, temperature=0.2,
+        "You convert a debater's plain-English request into a short keyword query for a "
+        "card database (haku.cards) that matches on tags, authors and topics.\n"
+        "Rules:\n"
+        "- Keep the ACTUAL topic words: proper nouns, theorists, authors and concepts "
+        "(e.g. Deleuze, Lacan, psychoanalysis, protectionism, deterrence) MUST survive.\n"
+        "- Expand debate shorthand into searchable words: AT/A2 -> answers to, K -> kritik, "
+        "CP -> counterplan, DA -> disadvantage, TOP -> stays 'TOP' if it's a proper name.\n"
+        "- Drop filler like 'give me', 'find', 'a', 'that breaks'.\n"
+        "- Output 2-6 keywords separated by spaces. No quotes, no punctuation, no explanation.\n\n"
+        f"Request: {req}\nKeywords:",
+        system="You are a precise policy debate research assistant. Output only keywords.",
+        max_tokens=40, temperature=0.1,
     )
     if err:
         return jsonify({"ok": False, "error": err}), 400
-    return jsonify({"ok": True, "keywords": text.replace('"', "").split("\n")[0][:80]})
+    kw = (text or "").replace('"', "").replace("Keywords:", "").split("\n")[0].strip()[:90]
+    return jsonify({"ok": True, "keywords": kw or req[:90]})
 
 
 @bp.route("/chat", methods=["POST"])

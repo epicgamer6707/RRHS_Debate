@@ -43,20 +43,22 @@ function setHL(mode) {
     applyFormat();
 }
 
-// ── AI-assisted search (server-side model, works on every device) ──────────────
+// ── Smart search: route the plain-English query through the AI to get good
+//    Haku keywords, then search. Falls back to the raw query if AI is off. ───────
 function _aiCsrf() {
     const m = document.querySelector('meta[name="csrf-token"]');
     return m ? m.getAttribute("content") : "";
 }
-async function aiAssistSearch() {
+async function smartSearch() {
     const input = document.getElementById("query");
     const statusEl = document.getElementById("aiSearchStatus");
-    const btn = document.getElementById("aiBtn");
+    const btn = document.getElementById("btn");
     const request = input.value.trim();
     if (!request) return;
 
     btn.disabled = true;
-    statusEl.textContent = "Thinking…";
+    statusEl.textContent = "Understanding your request…";
+    let terms = request;
     try {
         const r = await fetch("/ai/keywords", {
             method: "POST",
@@ -64,21 +66,17 @@ async function aiAssistSearch() {
             body: JSON.stringify({ request }),
         });
         const d = await r.json();
-        if (!d.ok) { statusEl.textContent = d.error || "AI failed."; alert("AI: " + (d.error || "failed")); return; }
-        if (d.keywords) input.value = d.keywords;
-        statusEl.textContent = "";
-        runSearch();
-    } catch (e) {
-        statusEl.textContent = "AI request failed.";
-    } finally {
-        btn.disabled = false;
-    }
+        if (d.ok && d.keywords) terms = d.keywords;
+    } catch (e) { /* AI unavailable — search the raw text */ }
+    statusEl.textContent = terms !== request ? `Searching: ${terms}` : "";
+    btn.disabled = false;
+    runSearch(terms);
 }
 
 // ── search ────────────────────────────────────────────────────────────────────
-function runSearch() {
+function runSearch(terms) {
     const btn   = document.getElementById("btn");
-    const query = document.getElementById("query").value.trim();
+    const query = (terms || document.getElementById("query").value).trim();
     if (!query) return;
 
     if (currentSrc) { currentSrc.close(); currentSrc = null; }
@@ -200,6 +198,9 @@ function showCard(idx) {
                         </svg>
                         Copy
                     </button>
+                    <button class="btn-copy" id="analyzeBtn" onclick="sendToAnalyzer(${idx})" title="Open this card in the Source Analyzer">
+                        Take to Source Analyzer
+                    </button>
                 </div>
             </div>
             <div class="right-content">${card.html || escHtml(card.text)}</div>
@@ -277,6 +278,18 @@ function saveCard(idx) {
         }
     })
     .catch(() => { if (btn) btn.textContent = "Error"; });
+}
+
+// ── hand a card off to the Source Analyzer ──────────────────────────────────────
+function sendToAnalyzer(idx) {
+    const card = allResults[idx];
+    if (!card) return;
+    try {
+        sessionStorage.setItem("analyzerCard", JSON.stringify({
+            title: card.title || "", text: card.text || "",
+        }));
+    } catch (e) { /* storage full/blocked — analyzer just won't autoload */ }
+    window.location.href = "/dashboard/cutter";
 }
 
 function copyAll() {

@@ -133,6 +133,8 @@ select.cut-input {
 
 /* annotated result: text + side callouts */
 .an-result { display: grid; grid-template-columns: 1fr 300px; gap: 18px; align-items: start; }
+.an-tagline { grid-column: 1 / -1; font-size: 16px; font-weight: 700; line-height: 1.5; color: var(--text-hi); background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 12px; padding: 14px 16px; }
+.an-tagline-label { display: inline-block; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-right: 10px; vertical-align: middle; }
 .an-text { background: #eceef4; color: #1b1d38; border-radius: 12px; padding: 18px 20px; line-height: 1.9; font-size: 14px; word-break: break-word; }
 .an-callouts { display: flex; flex-direction: column; gap: 10px; }
 .callout { border: 1px solid var(--line); border-left-width: 4px; border-radius: 10px; padding: 10px 12px; background: var(--grad-surface); cursor: default; transition: transform .12s, box-shadow .12s; }

@@ -63,35 +63,59 @@ def chat(history, system=None, **kw):
     return _chat(messages, **kw)
 
 
+def _extract_json(raw):
+    """Pull a JSON object out of a model reply, tolerant of fences/prose."""
+    if not raw:
+        return None
+    raw = raw.strip()
+    # Strip ```json ... ``` fences if present.
+    if raw.startswith("```"):
+        raw = raw.split("```", 2)[1] if raw.count("```") >= 2 else raw
+        if raw.lstrip().startswith("json"):
+            raw = raw.lstrip()[4:]
+    try:
+        return json.loads(raw)
+    except ValueError:
+        pass
+    import re
+    m = re.search(r"\{.*\}", raw, re.DOTALL)
+    if not m:
+        return None
+    try:
+        return json.loads(m.group(0))
+    except ValueError:
+        return None
+
+
 def analyze_segments(text, idea):
-    """Ask for a structured breakdown: which sentences serve which role, and how
-    each helps the student's idea. Returns (segments_list, error)."""
+    """Structured breakdown tied to the student's idea, plus a summary tagline.
+    Returns ({"tagline": str, "segments": [...]}, error)."""
+    idea = idea or ""
     system = (
-        "You are an expert policy/LD debate coach. You break a piece of evidence into "
-        "the parts that matter and label each part's role. Roles: interp, warrant, link, "
-        "impact, uniqueness, context. Only quote text that appears verbatim in the "
-        "evidence. Respond ONLY as JSON."
+        "You are an expert policy/LD debate coach. You read a piece of evidence (a 'card') "
+        "and, keeping the student's idea in mind, (1) write a punchy one-line tagline for the "
+        "card, and (2) break it into the parts that matter, labeling each part's role. "
+        "Roles: interp, warrant, link, impact, uniqueness, context. Only quote text that "
+        "appears verbatim in the evidence. Always respond with a single valid JSON object."
     )
     prompt = (
         f"The student's idea/argument: \"{idea or 'general analysis'}\"\n\n"
         f"Evidence:\n\"\"\"\n{text[:6000]}\n\"\"\"\n\n"
-        "Return JSON: {\"segments\": [{\"quote\": \"<exact sentence from the evidence>\", "
-        "\"role\": \"warrant|interp|link|impact|uniqueness|context\", "
-        "\"note\": \"<one short sentence on how this part helps their idea>\"}]}. "
-        "Pick the 3-6 most important segments. Each quote MUST be copied exactly from the evidence."
+        "Return JSON exactly like: {\"tagline\": \"<punchy one-line tag for this card, "
+        "framed toward the student's idea>\", \"segments\": [{\"quote\": \"<exact sentence "
+        "copied from the evidence>\", \"role\": \"warrant|interp|link|impact|uniqueness|context\", "
+        "\"note\": \"<one short sentence on how this part helps THEIR idea>\"}]}. "
+        "Pick the 3-6 segments most useful for their idea. Every quote MUST be copied "
+        "exactly (character-for-character) from the evidence."
     )
     raw, err = _chat(
         [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
-        max_tokens=1200, temperature=0.2,
+        max_tokens=1300, temperature=0.2, json_mode=True,
     )
     if err:
         return None, err
-    # Parse robustly across models: pull the first {...} block out of the reply.
-    import re
-    m = re.search(r"\{.*\}", raw or "", re.DOTALL)
-    try:
-        data = json.loads(m.group(0) if m else raw)
-        segs = data.get("segments", [])
-        return [s for s in segs if s.get("quote")], None
-    except (ValueError, AttributeError):
+    data = _extract_json(raw)
+    if not isinstance(data, dict):
         return None, "Couldn't parse the analysis. Try again."
+    segs = [s for s in data.get("segments", []) if isinstance(s, dict) and s.get("quote")]
+    return {"tagline": (data.get("tagline") or "").strip(), "segments": segs}, None

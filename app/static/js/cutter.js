@@ -1,5 +1,5 @@
-// ── Card Analyzer: load a card, Analyze (annotated), or Bot (ephemeral chat) ───
-let anSrcMode = "text";
+// ── Source Analyzer: load a source, Analyze (annotated), or Bot (ephemeral chat) ─
+let anSrcMode = "url";
 let anLoadedText = "";
 let botHistory = [];
 
@@ -79,15 +79,21 @@ function anAnalyze() {
         .then(d => {
             if (!d.ok) { status.textContent = d.error || "Analysis failed."; return; }
             status.textContent = "";
-            renderAnalysis(d.segments || []);
+            renderAnalysis(d.segments || [], d.tagline || "");
         })
         .catch(() => { status.textContent = "Something went wrong."; })
         .finally(() => { btn.disabled = false; });
 }
 
-function renderAnalysis(segments) {
+function renderAnalysis(segments, tagline) {
     const el = document.getElementById("anResult");
-    if (!segments.length) { el.innerHTML = '<div class="an-note">No key sections found. Try rephrasing your idea.</div>'; return; }
+    const tagHtml = tagline
+        ? `<div class="an-tagline"><span class="an-tagline-label">Tagline</span>${esc(tagline)}</div>`
+        : "";
+    if (!segments.length) {
+        el.innerHTML = tagHtml + '<div class="an-note">No key sections found. Try rephrasing your idea.</div>';
+        return;
+    }
 
     // Build highlighted text: wrap each segment's quote where it appears.
     let html = esc(anLoadedText);
@@ -108,7 +114,7 @@ function renderAnalysis(segments) {
             <div class="callout-note">${esc(s.note || "")}</div>
          </div>`).join("");
 
-    el.innerHTML =
+    el.innerHTML = tagHtml +
         `<div class="an-text">${html}</div>` +
         `<div class="an-callouts">${callouts}</div>`;
 
@@ -154,3 +160,25 @@ function anSend() {
         })
         .finally(() => { btn.disabled = false; input.focus(); });
 }
+
+// ── auto-load a card handed off from Card Finder ────────────────────────────────
+(function () {
+    let stashed;
+    try { stashed = sessionStorage.getItem("analyzerCard"); } catch (e) { return; }
+    if (!stashed) return;
+    sessionStorage.removeItem("analyzerCard");
+    let card;
+    try { card = JSON.parse(stashed); } catch (e) { return; }
+    if (!card || !card.text) return;
+
+    anLoadedText = card.text;
+    const note = document.getElementById("srcNote");
+    if (note) note.textContent = `Loaded “${(card.title || "card").slice(0, 60)}” from Card Finder.`;
+    const tabs = document.getElementById("anTabs");
+    if (tabs) tabs.hidden = false;
+    anTab("analyzer");
+    botHistory = [];
+    const box = document.getElementById("botMsgs");
+    if (box) box.innerHTML =
+        '<div class="bot-hint">Ask about this card, e.g. "find the exact warrant", "make a tagline".</div>';
+})();
